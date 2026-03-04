@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FHIR Goals Engine</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#0066CC;
+  --primary-light:#E8F1FB;
+  --primary-dark:#004C99;
+  --accent:#00A878;
+  --accent-light:#E6F7F2;
+  --danger:#DC3545;
+  --warning:#F59E0B;
+  --gold:#D4A017;
+  --bg:#F0F4F8;
+  --surface:#FFFFFF;
+  --text:#1A2332;
+  --text-secondary:#5A6B7F;
+  --text-muted:#8896A6;
+  --border:#E2E8F0;
+  --border-light:#F1F5F9;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.1),0 4px 10px rgba(0,0,0,.05);
+  --radius:8px;
+  --radius-lg:12px;
+  --radius-full:9999px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --sidebar-w:290px;
+  --events-w:320px;
+  --header-h:56px;
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* ===== HEADER ===== */
+.header{
+  height:var(--header-h);display:flex;align-items:center;padding:0 24px;
+  background:linear-gradient(135deg,#0A1628 0%,#162744 100%);
+  color:#fff;position:fixed;top:0;left:0;right:0;z-index:100;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+.header-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.3px}
+.header-logo svg{width:28px;height:28px}
+.header-logo span{opacity:.5;font-weight:400;margin-left:2px}
+.header-status{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.6)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#00A878;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;height:100vh;padding-top:var(--header-h)}
+.sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);height:calc(100vh - var(--header-h));
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.main{flex:1;overflow-y:auto;padding:24px;min-width:0}
+.events-panel{
+  width:var(--events-w);min-width:var(--events-w);height:calc(100vh - var(--header-h));
+  background:var(--surface);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar-header{padding:16px;border-bottom:1px solid var(--border)}
+.sidebar-header h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:10px;font-weight:600}
+.search-box{position:relative}
+.search-box input{
+  width:100%;padding:9px 12px 9px 36px;border:1px solid var(--border);
+  border-radius:var(--radius);font-size:13px;background:var(--bg);
+  transition:border-color .2s,box-shadow .2s;font-family:var(--font);
+}
+.search-box input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,102,204,.12)}
+.search-box input::placeholder{color:var(--text-muted)}
+.search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-muted)}
+.patient-list{flex:1;overflow-y:auto;padding:8px}
+.patient-list::-webkit-scrollbar{width:4px}
+.patient-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.patient-card{
+  padding:12px 14px;border-radius:var(--radius);cursor:pointer;
+  transition:all .15s ease;margin-bottom:4px;border:1px solid transparent;
+}
+.patient-card:hover{background:var(--primary-light);border-color:var(--border)}
+.patient-card.active{
+  background:var(--primary-light);border-color:var(--primary);
+  box-shadow:inset 3px 0 0 var(--primary);
+}
+.patient-card .name{font-weight:600;font-size:14px;color:var(--text);margin-bottom:2px}
+.patient-card .meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted)}
+.patient-card .meta .gender-icon{font-size:13px}
+.patient-count{padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);text-align:center}
+
+/* ===== MAIN CONTENT ===== */
+.main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.main-header h1{font-size:22px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.main-header h1 .patient-gender{font-size:18px}
+.tab-bar{display:flex;gap:4px;background:var(--bg);border-radius:var(--radius);padding:3px;margin-bottom:20px}
+.tab-btn{
+  padding:8px 20px;border:none;background:transparent;border-radius:6px;
+  font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;
+  transition:all .2s;font-family:var(--font);
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{background:var(--surface);color:var(--primary);box-shadow:var(--shadow);font-weight:600}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
+  border:none;border-radius:var(--radius);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;font-family:var(--font);
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark);box-shadow:var(--shadow-md)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:hover{background:#008F66}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg)}
+
+/* ===== GOAL CARDS ===== */
+.goals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.goal-card{
+  background:var(--surface);border-radius:var(--radius-lg);padding:20px;
+  border:1px solid var(--border);transition:all .2s;position:relative;
+}
+.goal-card:hover{box-shadow:var(--shadow-md);border-color:var(--border)}
+.goal-card .description{font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px;line-height:1.4}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 10px;
+  border-radius:var(--radius-full);font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.3px;
+}
+.badge-active{background:#DCFCE7;color:#166534}
+.badge-completed{background:#DBEAFE;color:#1E40AF}
+.badge-proposed{background:#FEF9C3;color:#854D0E}
+.badge-planned{background:#E0E7FF;color:#3730A3}
+.badge-accepted{background:#D1FAE5;color:#065F46}
+.badge-cancelled{background:#F1F5F9;color:#64748B}
+.badge-on-hold{background:#FED7AA;color:#9A3412}
+.badge-rejected{background:#FECACA;color:#991B1B}
+.badge-entered-in-error{background:#F1F5F9;color:#64748B}
+
+.badge-improving{background:#DCFCE7;color:#166534}
+.badge-worsening{background:#FEE2E2;color:#991B1B}
+.badge-achieved{background:#FEF3C7;color:#92400E}
+.badge-sustaining{background:#D1FAE5;color:#065F46}
+.badge-in-progress{background:#DBEAFE;color:#1E40AF}
+.badge-no-change{background:#F1F5F9;color:#64748B}
+.badge-not-achieved{background:#FECACA;color:#991B1B}
+.badge-no-progress{background:#FED7AA;color:#9A3412}
+.badge-not-attainable{background:#F1F5F9;color:#64748B}
+
+.progress-wrap{margin:12px 0}
+.progress-bar{
+  height:6px;background:var(--border-light);border-radius:3px;overflow:hidden;
+}
+.progress-fill{height:100%;border-radius:3px;transition:width .6s ease;background:linear-gradient(90deg,var(--primary),var(--accent))}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px}
+.goal-details{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:var(--text-secondary);margin-top:10px}
+.goal-details .detail{display:flex;align-items:center;gap:4px}
+.goal-details .detail svg{width:14px;height:14px;flex-shrink:0}
+.category-tag{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 8px;
+  border-radius:var(--radius-full);font-size:11px;font-weight:500;
+  background:var(--primary-light);color:var(--primary);
+}
+
+/* ===== CARE PLAN CARDS ===== */
+.careplan-card{
+  background:var(--surface);border-radius:var(--radius-lg);padding:20px;
+  border:1px solid var(--border);margin-bottom:16px;transition:all .2s;
+}
+.careplan-card:hover{box-shadow:var(--shadow-md)}
+.careplan-card .cp-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
+.careplan-card .cp-desc{font-size:13px;color:var(--text-secondary);margin-bottom:12px;line-height:1.5}
+.careplan-meta{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:var(--text-muted);margin-bottom:12px}
+.cp-goals-list{padding-top:10px;border-top:1px solid var(--border)}
+.cp-goals-list h4{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;font-weight:600}
+.cp-goal-ref{
+  display:flex;align-items:center;gap:6px;padding:6px 10px;
+  background:var(--bg);border-radius:var(--radius);font-size:13px;
+  color:var(--text-secondary);margin-bottom:4px;
+}
+.cp-goal-ref svg{width:14px;height:14px;color:var(--primary);flex-shrink:0}
+
+/* ===== EVENTS PANEL ===== */
+.events-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.events-header h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);font-weight:600}
+.ws-status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)}
+.ws-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted)}
+.ws-dot.connected{background:var(--accent)}
+.ws-dot.connecting{background:var(--warning);animation:pulse 1s infinite}
+.events-list{flex:1;overflow-y:auto;padding:8px 12px}
+.events-list::-webkit-scrollbar{width:4px}
+.events-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.event-item{
+  padding:10px 12px;border-radius:var(--radius);margin-bottom:6px;
+  background:var(--bg);border-left:3px solid var(--border);
+  animation:slideIn .3s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.event-item.goal-achieved{border-left-color:var(--gold)}
+.event-item.goal-updated{border-left-color:var(--primary)}
+.event-item.goal-suggested{border-left-color:var(--accent)}
+.event-item.careplan-updated{border-left-color:#8B5CF6}
+.event-type{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.event-type.goal-achieved{color:var(--gold)}
+.event-type.goal-updated{color:var(--primary)}
+.event-type.goal-suggested{color:var(--accent)}
+.event-type.careplan-updated{color:#8B5CF6}
+.event-desc{font-size:12px;color:var(--text-secondary);line-height:1.4}
+.event-time{font-size:10px;color:var(--text-muted);margin-top:4px}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(10,22,40,.6);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{
+  background:var(--surface);border-radius:var(--radius-lg);width:90%;max-width:640px;
+  max-height:80vh;display:flex;flex-direction:column;
+  box-shadow:var(--shadow-lg);transform:scale(.95);
+  transition:transform .25s;
+}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;border-bottom:1px solid var(--border);
+}
+.modal-header h2{font-size:18px;font-weight:700}
+.modal-close{
+  background:none;border:none;cursor:pointer;padding:4px;
+  color:var(--text-muted);transition:color .2s;font-size:20px;
+  line-height:1;width:32px;height:32px;display:flex;align-items:center;
+  justify-content:center;border-radius:var(--radius);
+}
+.modal-close:hover{background:var(--bg);color:var(--text)}
+.modal-body{flex:1;overflow-y:auto;padding:20px 24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+.suggestion-card{
+  padding:16px;border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:12px;transition:all .2s;
+}
+.suggestion-card:hover{border-color:var(--primary);box-shadow:var(--shadow)}
+.suggestion-card .s-desc{font-size:14px;font-weight:600;margin-bottom:8px}
+.suggestion-card .s-meta{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--text-secondary);margin-bottom:10px}
+.suggestion-card .s-actions{display:flex;gap:6px}
+
+/* ===== STATES ===== */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;text-align:center;color:var(--text-muted);
+}
+.empty-state svg{width:48px;height:48px;margin-bottom:16px;opacity:.4}
+.empty-state h3{font-size:16px;color:var(--text-secondary);margin-bottom:6px;font-weight:600}
+.empty-state p{font-size:13px;max-width:280px}
+
+.spinner{
+  width:20px;height:20px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;
+}
+.spinner.dark{border-color:var(--border);border-top-color:var(--primary)}
+.spinner-lg{width:32px;height:32px;border-width:3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.loading-overlay{
+  display:flex;align-items:center;justify-content:center;
+  padding:40px;
+}
+
+.skeleton{
+  background:linear-gradient(90deg,var(--border-light) 25%,var(--bg) 50%,var(--border-light) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius);
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{height:180px;margin-bottom:16px;border-radius:var(--radius-lg)}
+
+.toast{
+  position:fixed;bottom:24px;right:24px;padding:12px 20px;
+  border-radius:var(--radius);color:#fff;font-size:13px;font-weight:500;
+  box-shadow:var(--shadow-lg);z-index:300;
+  transform:translateY(100px);opacity:0;transition:all .3s ease;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--accent)}
+.toast.error{background:var(--danger)}
+.toast.info{background:var(--primary)}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <svg viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#0066CC"/>
+      <path d="M14 6v16M6 14h16" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="14" cy="14" r="3" fill="#fff" opacity=".3"/>
+    </svg>
+    FHIR Goals Engine
+  </div>
+  <div class="header-status">
+    <div class="status-dot" id="serverDot"></div>
+    <span id="serverStatus">Connected</span>
+  </div>
+</header>
+
+<div class="app">
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Patients</h2>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="patientSearch" placeholder="Search patients...">
+      </div>
+    </div>
+    <div class="patient-list" id="patientList"></div>
+    <div class="patient-count" id="patientCount"></div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main" id="mainContent">
+    <div id="noSelection" class="empty-state" style="height:100%">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <h3>Select a Patient</h3>
+      <p>Choose a patient from the sidebar to view their health goals and care plans.</p>
+    </div>
+    <div id="patientView" style="display:none">
+      <div class="main-header">
+        <h1 id="patientName"></h1>
+        <button class="btn btn-primary" id="suggestBtn" onclick="suggestGoals()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Suggest Goals
+        </button>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="goals" onclick="switchTab('goals')">Goals</button>
+        <button class="tab-btn" data-tab="careplans" onclick="switchTab('careplans')">Care Plans</button>
+      </div>
+      <div id="goalsTab">
+        <div class="goals-grid" id="goalsGrid"></div>
+      </div>
+      <div id="careplansTab" style="display:none">
+        <div id="careplansList"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT EVENTS PANEL -->
+  <aside class="events-panel">
+    <div class="events-header">
+      <h2>Live Events</h2>
+      <div class="ws-status">
+        <div class="ws-dot" id="wsDot"></div>
+        <span id="wsLabel">Disconnected</span>
+      </div>
+    </div>
+    <div class="events-list" id="eventsList">
+      <div class="empty-state" id="eventsEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <h3>No Events</h3>
+        <p>Select a patient to start receiving live updates.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- SUGGESTIONS MODAL -->
+<div class="modal-overlay" id="suggestModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Suggested Goals</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="suggestBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const state = {
+  patients: [],
+  selectedPatient: null,
+  goals: [],
+  observations: [],
+  carePlans: [],
+  ws: null,
+  wsRetryDelay: 1000,
+  wsMaxDelay: 30000,
+  wsRetryTimer: null,
+};
+
+// ─── ICONS ───
+const icons = {
+  male: '\u2642\uFE0F',
+  female: '\u2640\uFE0F',
+  other: '\u26A5',
+  unknown: '\u2022',
+  target: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  calendar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  flag: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  arrowUp: '\u2191',
+  arrowDown: '\u2193',
+  star: '\u2605',
+  check: '\u2713',
+  dot: '\u2022',
+};
+
+const achievementIcons = {
+  'improving': icons.arrowUp,
+  'worsening': icons.arrowDown,
+  'achieved': icons.star,
+  'sustaining': icons.check,
+  'in-progress': icons.dot,
+  'no-change': '\u2194',
+  'not-achieved': '\u2717',
+  'no-progress': '\u2015',
+  'not-attainable': '\u2717',
+};
+
+// ─── API ───
+async function api(url, opts = {}) {
+  const res = await fetch(url, {
+    headers: { 'Content-Type': 'application/fhir+json', ...opts.headers },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.issue?.[0]?.diagnostics || `Request failed (${res.status})`);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+function extractResources(bundle) {
+  if (!bundle?.entry) return [];
+  return bundle.entry.map(e => e.resource).filter(Boolean);
+}
+
+// ─── PATIENTS ───
+async function loadPatients() {
+  const list = document.getElementById('patientList');
+  list.innerHTML = '<div class="loading-overlay"><div class="spinner dark spinner-lg"></div></div>';
+  try {
+    const bundle = await api('/Patient');
+    state.patients = extractResources(bundle);
+    renderPatients();
+  } catch (e) {
+    list.innerHTML = `<div class="empty-state"><h3>Error loading patients</h3><p>${esc(e.message)}</p></div>`;
+  }
+}
+
+function renderPatients(filter = '') {
+  const list = document.getElementById('patientList');
+  const filtered = state.patients.filter(p => {
+    if (!filter) return true;
+    const name = patientName(p).toLowerCase();
+    return name.includes(filter.toLowerCase());
+  });
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding:30px"><h3>No patients found</h3></div>';
+    document.getElementById('patientCount').textContent = '0 patients';
+    return;
+  }
+  list.innerHTML = filtered.map(p => {
+    const active = state.selectedPatient?.id === p.id ? ' active' : '';
+    const gIcon = icons[p.gender] || icons.unknown;
+    return `<div class="patient-card${active}" onclick="selectPatient('${p.id}')">
+      <div class="name">${esc(patientName(p))}</div>
+      <div class="meta">
+        <span class="gender-icon">${gIcon}</span>
+        <span>${p.gender || 'Unknown'}</span>
+        <span>${p.birthDate ? formatDate(p.birthDate) : 'N/A'}</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('patientCount').textContent = `${filtered.length} patient${filtered.length === 1 ? '' : 's'}`;
+}
+
+function patientName(p) {
+  if (!p.name || !p.name.length) return 'Unknown';
+  const n = p.name[0];
+  const given = n.given ? n.given.join(' ') : '';
+  return [given, n.family].filter(Boolean).join(' ') || 'Unknown';
+}
+
+async function selectPatient(id) {
+  const p = state.patients.find(pt => pt.id === id);
+  if (!p) return;
+  state.selectedPatient = p;
+  renderPatients(document.getElementById('patientSearch').value);
+  document.getElementById('noSelection').style.display = 'none';
+  document.getElementById('patientView').style.display = '';
+  const gIcon = icons[p.gender] || '';
+  document.getElementById('patientName').innerHTML = `${esc(patientName(p))} <span class="patient-gender">${gIcon}</span>`;
+  switchTab('goals');
+  connectWebSocket(id);
+  await Promise.all([loadGoals(id), loadObservations(id), loadCarePlans(id)]);
+}
+
+// ─── GOALS ───
+async function loadGoals(patientId) {
+  const grid = document.getElementById('goalsGrid');
+  grid.innerHTML = '<div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>';
+  try {
+    const bundle = await api(`/Goal?patient=${patientId}`);
+    state.goals = extractResources(bundle);
+    renderGoals();
+  } catch (e) {
+    grid.innerHTML = `<div class="empty-state"><h3>Error loading goals</h3><p>${esc(e.message)}</p></div>`;
+  }
+}
+
+function renderGoals() {
+  const grid = document.getElementById('goalsGrid');
+  if (state.goals.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+      <h3>No Goals Yet</h3>
+      <p>Click "Suggest Goals" to generate AI-powered health goal recommendations.</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = state.goals.map(g => goalCardHTML(g)).join('');
+}
+
+function goalCardHTML(g) {
+  const desc = g.description?.text || 'No description';
+  const lifecycle = g.lifecycleStatus || 'unknown';
+  const lcClass = 'badge-' + lifecycle.replace(/\s+/g, '-');
+  const achievement = getAchievementCode(g);
+  const achClass = achievement ? 'badge-' + achievement.replace(/\s+/g, '-') : '';
+  const achIcon = achievement ? (achievementIcons[achievement] || '') : '';
+  const category = getCategory(g);
+  const startDate = g.startDate;
+  const target = g.target?.[0];
+  const progress = computeProgress(g);
+
+  let targetStr = '';
+  if (target) {
+    const parts = [];
+    if (target.detailQuantity) parts.push(`${target.detailQuantity.value} ${target.detailQuantity.unit || ''}`);
+    if (target.dueDate) parts.push(`by ${formatDate(target.dueDate)}`);
+    if (parts.length) targetStr = `Target: ${parts.join(' ')}`;
+  }
+
+  return `<div class="goal-card">
+    <div class="description">${esc(desc)}</div>
+    <div class="badges">
+      <span class="badge ${lcClass}">${esc(lifecycle)}</span>
+      ${achievement ? `<span class="badge ${achClass}">${achIcon} ${esc(achievement)}</span>` : ''}
+      ${category ? `<span class="category-tag">${esc(category)}</span>` : ''}
+    </div>
+    ${progress !== null ? `<div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100, Math.max(0, progress))}%"></div></div>
+      <div class="progress-label"><span>${Math.round(progress)}% progress</span>${targetStr ? `<span>${esc(targetStr)}</span>` : ''}</div>
+    </div>` : (targetStr ? `<div class="goal-details"><div class="detail">${icons.target} ${esc(targetStr)}</div></div>` : '')}
+    <div class="goal-details">
+      ${startDate ? `<div class="detail">${icons.calendar} Started ${formatDate(startDate)}</div>` : ''}
+      ${g.priority?.coding?.[0]?.display ? `<div class="detail">${icons.flag} ${esc(g.priority.coding[0].display)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function getAchievementCode(g) {
+  if (!g.achievementStatus) return null;
+  if (g.achievementStatus.coding?.length) return g.achievementStatus.coding[0].code;
+  return g.achievementStatus.text || null;
+}
+
+function getCategory(g) {
+  if (!g.category?.length) return null;
+  const cat = g.category[0];
+  if (cat.coding?.length) return cat.coding[0].display || cat.coding[0].code;
+  return cat.text || null;
+}
+
+function computeProgress(g) {
+  const target = g.target?.[0];
+  if (!target?.detailQuantity?.value) return null;
+  if (!target.measure?.coding?.length) return null;
+  const measureCode = target.measure.coding[0].code;
+  const targetVal = target.detailQuantity.value;
+
+  const relevant = state.observations.filter(o => {
+    if (!o.valueQuantity) return false;
+    return o.code?.coding?.some(c => c.code === measureCode);
+  });
+  if (!relevant.length) return null;
+
+  relevant.sort((a, b) => (b.effectiveDateTime || '').localeCompare(a.effectiveDateTime || ''));
+  const latest = relevant[0].valueQuantity.value;
+
+  const oldest = relevant[relevant.length - 1].valueQuantity.value;
+  const baseline = oldest;
+  const totalChange = Math.abs(targetVal - baseline);
+  if (totalChange === 0) return 100;
+  const currentChange = Math.abs(latest - baseline);
+  const movingRight = (targetVal > baseline) ? (latest >= baseline) : (latest <= baseline);
+  if (!movingRight) return 0;
+  return (currentChange / totalChange) * 100;
+}
+
+// ─── OBSERVATIONS ───
+async function loadObservations(patientId) {
+  try {
+    const bundle = await api(`/Observation?patient=${patientId}`);
+    state.observations = extractResources(bundle);
+  } catch (_) {
+    state.observations = [];
+  }
+}
+
+// ─── CARE PLANS ───
+async function loadCarePlans(patientId) {
+  const el = document.getElementById('careplansList');
+  try {
+    const bundle = await api(`/CarePlan?patient=${patientId}`);
+    state.carePlans = extractResources(bundle);
+  } catch (_) {
+    state.carePlans = [];
+  }
+}
+
+function renderCarePlans() {
+  const el = document.getElementById('careplansList');
+  if (state.carePlans.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+      <h3>No Care Plans</h3>
+      <p>No care plans have been created for this patient yet.</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = state.carePlans.map(cp => {
+    const statusClass = 'badge-' + (cp.status || 'unknown').replace(/\s+/g, '-');
+    const period = cp.period;
+    let periodStr = '';
+    if (period) {
+      const parts = [];
+      if (period.start) parts.push(formatDate(period.start));
+      if (period.end) parts.push(formatDate(period.end));
+      periodStr = parts.join(' \u2192 ');
+    }
+    const goals = cp.goal || [];
+    return `<div class="careplan-card">
+      <div class="cp-title">${esc(cp.title || 'Untitled Care Plan')}</div>
+      <div class="cp-desc">${esc(cp.description || 'No description provided.')}</div>
+      <div class="careplan-meta">
+        <span class="badge ${statusClass}">${esc(cp.status || 'unknown')}</span>
+        <span class="badge badge-proposed">${esc(cp.intent || '')}</span>
+        ${periodStr ? `<span>${icons.calendar} ${periodStr}</span>` : ''}
+      </div>
+      ${goals.length ? `<div class="cp-goals-list">
+        <h4>Referenced Goals (${goals.length})</h4>
+        ${goals.map(ref => {
+          const goalId = (ref.reference || '').replace('Goal/', '');
+          const matched = state.goals.find(g => g.id === goalId);
+          const label = matched?.description?.text || ref.display || ref.reference || 'Unknown Goal';
+          return `<div class="cp-goal-ref">${icons.target} ${esc(label)}</div>`;
+        }).join('')}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─── TABS ───
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('goalsTab').style.display = tab === 'goals' ? '' : 'none';
+  document.getElementById('careplansTab').style.display = tab === 'careplans' ? '' : 'none';
+  if (tab === 'careplans') renderCarePlans();
+  if (tab === 'goals') renderGoals();
+}
+
+// ─── SUGGEST GOALS ───
+async function suggestGoals() {
+  if (!state.selectedPatient) return;
+  const btn = document.getElementById('suggestBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Generating...';
+  try {
+    const result = await api('/Goal/$suggest', {
+      method: 'POST',
+      body: JSON.stringify({ patientId: state.selectedPatient.id }),
+    });
+    const suggestions = Array.isArray(result) ? result : (result?.entry ? extractResources(result) : [result]);
+    showSuggestions(suggestions);
+  } catch (e) {
+    showToast('Failed to get suggestions: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Suggest Goals`;
+  }
+}
+
+function showSuggestions(goals) {
+  const body = document.getElementById('suggestBody');
+  if (!goals.length) {
+    body.innerHTML = '<div class="empty-state"><h3>No suggestions</h3><p>The engine could not generate suggestions for this patient.</p></div>';
+  } else {
+    body.innerHTML = goals.map((g, i) => {
+      const desc = g.description?.text || g.description || 'No description';
+      const category = getCategory(g) || '';
+      const target = g.target?.[0];
+      let targetStr = '';
+      if (target?.detailQuantity) {
+        targetStr = `${target.detailQuantity.value} ${target.detailQuantity.unit || ''}`;
+        if (target.dueDate) targetStr += ` by ${formatDate(target.dueDate)}`;
+      }
+      const priority = g.priority?.coding?.[0]?.display || '';
+      return `<div class="suggestion-card">
+        <div class="s-desc">${esc(typeof desc === 'string' ? desc : desc)}</div>
+        <div class="s-meta">
+          ${category ? `<span class="category-tag">${esc(category)}</span>` : ''}
+          ${targetStr ? `<span>${icons.target} ${esc(targetStr)}</span>` : ''}
+          ${priority ? `<span>${icons.flag} ${esc(priority)}</span>` : ''}
+        </div>
+        <div class="s-actions">
+          <button class="btn btn-accent btn-sm" onclick="acceptSuggestion(${i})">Accept Goal</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  state._suggestions = goals;
+  document.getElementById('suggestModal').classList.add('open');
+}
+
+async function acceptSuggestion(idx) {
+  const g = state._suggestions[idx];
+  if (!g || !state.selectedPatient) return;
+  g.subject = { reference: `Patient/${state.selectedPatient.id}` };
+  if (!g.lifecycleStatus) g.lifecycleStatus = 'proposed';
+  if (!g.resourceType) g.resourceType = 'Goal';
+  if (!g.startDate) g.startDate = new Date().toISOString().slice(0, 10);
+  try {
+    await api('/Goal', { method: 'POST', body: JSON.stringify(g) });
+    showToast('Goal accepted and saved!', 'success');
+    state._suggestions.splice(idx, 1);
+    if (state._suggestions.length === 0) closeModal();
+    else showSuggestions(state._suggestions);
+    await loadGoals(state.selectedPatient.id);
+  } catch (e) {
+    showToast('Failed to save goal: ' + e.message, 'error');
+  }
+}
+
+function closeModal() {
+  document.getElementById('suggestModal').classList.remove('open');
+}
+
+// ─── WEBSOCKET ───
+function connectWebSocket(patientId) {
+  if (state.ws) {
+    state.ws.onclose = null;
+    state.ws.close();
+    state.ws = null;
+  }
+  if (state.wsRetryTimer) {
+    clearTimeout(state.wsRetryTimer);
+    state.wsRetryTimer = null;
+  }
+  state.wsRetryDelay = 1000;
+
+  document.getElementById('eventsList').innerHTML = `<div class="empty-state" id="eventsEmpty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    <h3>Listening...</h3>
+    <p>Waiting for real-time events for this patient.</p>
+  </div>`;
+
+  updateWsStatus('connecting');
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${proto}//${location.host}/ws?patient=${patientId}`);
+
+  ws.onopen = () => {
+    state.wsRetryDelay = 1000;
+    updateWsStatus('connected');
+  };
+
+  ws.onmessage = (evt) => {
+    try {
+      const event = JSON.parse(evt.data);
+      appendEvent(event);
+    } catch (_) {}
+  };
+
+  ws.onclose = () => {
+    updateWsStatus('disconnected');
+    if (state.selectedPatient?.id === patientId) {
+      state.wsRetryTimer = setTimeout(() => {
+        if (state.selectedPatient?.id === patientId) connectWebSocket(patientId);
+      }, state.wsRetryDelay);
+      state.wsRetryDelay = Math.min(state.wsRetryDelay * 2, state.wsMaxDelay);
+    }
+  };
+
+  ws.onerror = () => ws.close();
+  state.ws = ws;
+}
+
+function updateWsStatus(s) {
+  const dot = document.getElementById('wsDot');
+  const label = document.getElementById('wsLabel');
+  dot.className = 'ws-dot' + (s === 'connected' ? ' connected' : s === 'connecting' ? ' connecting' : '');
+  label.textContent = s === 'connected' ? 'Connected' : s === 'connecting' ? 'Connecting...' : 'Disconnected';
+}
+
+function appendEvent(event) {
+  const empty = document.getElementById('eventsEmpty');
+  if (empty) empty.remove();
+  const list = document.getElementById('eventsList');
+  const typeClass = (event.type || '').replace(/\./g, '-');
+  const time = new Date().toLocaleTimeString();
+  let desc = '';
+  if (event.data) {
+    if (typeof event.data === 'string') desc = event.data;
+    else if (event.data.description?.text) desc = event.data.description.text;
+    else if (event.data.title) desc = event.data.title;
+    else desc = JSON.stringify(event.data).slice(0, 120);
+  }
+  const typeLabel = (event.type || 'unknown').replace(/\./g, ' ');
+  const el = document.createElement('div');
+  el.className = `event-item ${typeClass}`;
+  el.innerHTML = `<div class="event-type ${typeClass}">${esc(typeLabel)}</div>
+    <div class="event-desc">${esc(desc)}</div>
+    <div class="event-time">${time}</div>`;
+  list.prepend(el);
+
+  if (event.type === 'goal.achieved' || event.type === 'goal.updated' || event.type === 'goal.suggested') {
+    if (state.selectedPatient) loadGoals(state.selectedPatient.id);
+  }
+  if (event.type === 'careplan.updated') {
+    if (state.selectedPatient) loadCarePlans(state.selectedPatient.id);
+  }
+}
+
+// ─── UTILS ───
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const str = typeof d === 'string' ? d : d.toISOString?.() || String(d);
+  const parts = str.slice(0, 10).split('-');
+  if (parts.length !== 3) return str;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const m = parseInt(parts[1], 10);
+  return `${months[m - 1] || parts[1]} ${parseInt(parts[2], 10)}, ${parts[0]}`;
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ─── SEARCH ───
+document.getElementById('patientSearch').addEventListener('input', function () {
+  renderPatients(this.value);
+});
+
+// ─── MODAL ESC ───
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+document.getElementById('suggestModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ─── INIT ───
+loadPatients();
+</script>
+</body>
+</html>

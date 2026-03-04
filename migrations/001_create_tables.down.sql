@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS observations;
+DROP TABLE IF EXISTS care_plans;
+DROP TABLE IF EXISTS goals;
+DROP TABLE IF EXISTS patients;
