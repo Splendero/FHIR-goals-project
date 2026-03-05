@@ -826,12 +826,15 @@ function appendEvent(event) {
   const typeClass = (event.type || '').replace(/\./g, '-');
   const time = new Date().toLocaleTimeString();
   let desc = '';
+
   if (event.data) {
     if (typeof event.data === 'string') desc = event.data;
     else if (event.data.description?.text) desc = event.data.description.text;
+    else if (event.data.description) desc = event.data.description;
     else if (event.data.title) desc = event.data.title;
     else desc = JSON.stringify(event.data).slice(0, 120);
   }
+
   const typeLabel = (event.type || 'unknown').replace(/\./g, ' ');
   const el = document.createElement('div');
   el.className = `event-item ${typeClass}`;
@@ -841,11 +844,22 @@ function appendEvent(event) {
   list.prepend(el);
 
   if (event.type === 'goal.achieved' || event.type === 'goal.updated' || event.type === 'goal.suggested') {
-    if (state.selectedPatient) loadGoals(state.selectedPatient.id);
+    if (state.selectedPatient) refreshPatientData();
   }
   if (event.type === 'careplan.updated') {
     if (state.selectedPatient) loadCarePlans(state.selectedPatient.id);
   }
+}
+
+let _refreshTimer = null;
+function refreshPatientData() {
+  if (_refreshTimer) return;
+  _refreshTimer = setTimeout(async () => {
+    _refreshTimer = null;
+    if (!state.selectedPatient) return;
+    await Promise.all([loadGoals(state.selectedPatient.id), loadObservations(state.selectedPatient.id)]);
+    renderGoals();
+  }, 800);
 }
 
 // ─── UTILS ───

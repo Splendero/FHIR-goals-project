@@ -1,0 +1,636 @@
+{
+	"info": {
+		"_postman_id": "fhir-goals-engine-collection",
+		"name": "FHIR Goals Engine",
+		"description": "Postman collection for the FHIR R4 Health Goals Engine API. Covers Patient, Goal, CarePlan, Observation CRUD, and AI-powered goal suggestions.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "patientId",
+			"value": ""
+		},
+		{
+			"key": "goalId",
+			"value": ""
+		},
+		{
+			"key": "carePlanId",
+			"value": ""
+		},
+		{
+			"key": "observationId",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "1. Patients",
+			"item": [
+				{
+					"name": "Search All Patients",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is a Bundle\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.resourceType).to.eql(\"Bundle\");",
+									"});",
+									"",
+									"if (pm.response.json().entry && pm.response.json().entry.length > 0) {",
+									"    pm.collectionVariables.set(\"patientId\", pm.response.json().entry[0].resource.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Patient",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient"]
+						},
+						"description": "Search all patients. If results exist, the first patient's ID is saved to the `patientId` collection variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Patient",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Patient created with ID\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.id).to.be.a(\"string\");",
+									"    pm.collectionVariables.set(\"patientId\", json.id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Patient\",\n  \"active\": true,\n  \"name\": [{\"family\": \"Demo\", \"given\": [\"Postman\"]}],\n  \"gender\": \"male\",\n  \"birthDate\": \"1990-01-15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Patient",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient"]
+						},
+						"description": "Create a new patient. The returned ID is saved to the `patientId` collection variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Patient/{{patientId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient", "{{patientId}}"]
+						},
+						"description": "Retrieve a single patient by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Patient",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Patient\",\n  \"active\": true,\n  \"name\": [{\"family\": \"Demo\", \"given\": [\"Postman\"]}],\n  \"gender\": \"female\",\n  \"birthDate\": \"1990-01-15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Patient/{{patientId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient", "{{patientId}}"]
+						},
+						"description": "Update an existing patient. This example changes gender from male to female."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Patient",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Patient/{{patientId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient", "{{patientId}}"]
+						},
+						"description": "Delete a patient by ID. Returns 204 No Content on success."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for FHIR Patient resources."
+		},
+		{
+			"name": "2. Goals",
+			"item": [
+				{
+					"name": "Search Goals for Patient",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Goal?patient={{patientId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal"],
+							"query": [
+								{
+									"key": "patient",
+									"value": "{{patientId}}"
+								}
+							]
+						},
+						"description": "Search all goals linked to a patient."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Goal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Goal created with ID\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.id).to.be.a(\"string\");",
+									"    pm.collectionVariables.set(\"goalId\", json.id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Goal\",\n  \"lifecycleStatus\": \"active\",\n  \"description\": {\"text\": \"Reduce body weight to 80kg\"},\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/goal-category\", \"code\": \"dietary\", \"display\": \"Dietary\"}]}],\n  \"target\": [{\n    \"measure\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"29463-7\", \"display\": \"Body Weight\"}]},\n    \"detailQuantity\": {\"value\": 80, \"unit\": \"kg\", \"system\": \"http://unitsofmeasure.org\"},\n    \"dueDate\": \"2026-06-01\"\n  }],\n  \"startDate\": \"2026-03-04\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal"]
+						},
+						"description": "Create a new health goal for the patient. The returned ID is saved to the `goalId` collection variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Goal by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Goal/{{goalId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal", "{{goalId}}"]
+						},
+						"description": "Retrieve a single goal by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Goal",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Goal\",\n  \"lifecycleStatus\": \"on-hold\",\n  \"description\": {\"text\": \"Reduce body weight to 80kg\"},\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/goal-category\", \"code\": \"dietary\", \"display\": \"Dietary\"}]}],\n  \"target\": [{\n    \"measure\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"29463-7\", \"display\": \"Body Weight\"}]},\n    \"detailQuantity\": {\"value\": 80, \"unit\": \"kg\", \"system\": \"http://unitsofmeasure.org\"},\n    \"dueDate\": \"2026-06-01\"\n  }],\n  \"startDate\": \"2026-03-04\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Goal/{{goalId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal", "{{goalId}}"]
+						},
+						"description": "Update an existing goal. This example changes lifecycleStatus from active to on-hold."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Goal",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Goal/{{goalId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal", "{{goalId}}"]
+						},
+						"description": "Delete a goal by ID. Returns 204 No Content on success."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for FHIR Goal resources."
+		},
+		{
+			"name": "3. Care Plans",
+			"item": [
+				{
+					"name": "Search Care Plans for Patient",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/CarePlan?patient={{patientId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["CarePlan"],
+							"query": [
+								{
+									"key": "patient",
+									"value": "{{patientId}}"
+								}
+							]
+						},
+						"description": "Search all care plans linked to a patient."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Care Plan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"CarePlan created with ID\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.id).to.be.a(\"string\");",
+									"    pm.collectionVariables.set(\"carePlanId\", json.id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"CarePlan\",\n  \"status\": \"active\",\n  \"intent\": \"plan\",\n  \"title\": \"Weight Management Program\",\n  \"description\": \"Comprehensive weight management through diet and exercise\",\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"goal\": [{\"reference\": \"Goal/{{goalId}}\"}],\n  \"category\": [{\"coding\": [{\"code\": \"weight-management\", \"display\": \"Weight Management\"}]}]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/CarePlan",
+							"host": ["{{baseUrl}}"],
+							"path": ["CarePlan"]
+						},
+						"description": "Create a new care plan. The returned ID is saved to the `carePlanId` collection variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Care Plan by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/CarePlan/{{carePlanId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["CarePlan", "{{carePlanId}}"]
+						},
+						"description": "Retrieve a single care plan by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Care Plan",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"CarePlan\",\n  \"status\": \"completed\",\n  \"intent\": \"plan\",\n  \"title\": \"Weight Management Program\",\n  \"description\": \"Comprehensive weight management through diet and exercise\",\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"goal\": [{\"reference\": \"Goal/{{goalId}}\"}],\n  \"category\": [{\"coding\": [{\"code\": \"weight-management\", \"display\": \"Weight Management\"}]}]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/CarePlan/{{carePlanId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["CarePlan", "{{carePlanId}}"]
+						},
+						"description": "Update an existing care plan. This example changes status from active to completed."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Care Plan",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/CarePlan/{{carePlanId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["CarePlan", "{{carePlanId}}"]
+						},
+						"description": "Delete a care plan by ID. Returns 204 No Content on success."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for FHIR CarePlan resources."
+		},
+		{
+			"name": "4. Observations",
+			"item": [
+				{
+					"name": "Search Observations for Patient",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Observation?patient={{patientId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation"],
+							"query": [
+								{
+									"key": "patient",
+									"value": "{{patientId}}"
+								}
+							]
+						},
+						"description": "Search all observations linked to a patient."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Observation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Observation created with ID\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.id).to.be.a(\"string\");",
+									"    pm.collectionVariables.set(\"observationId\", json.id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"code\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"29463-7\", \"display\": \"Body Weight\"}]},\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"effectiveDateTime\": \"2026-03-04T10:00:00Z\",\n  \"valueQuantity\": {\"value\": 85, \"unit\": \"kg\", \"system\": \"http://unitsofmeasure.org\", \"code\": \"kg\"},\n  \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\", \"code\": \"vital-signs\", \"display\": \"Vital Signs\"}]}]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Observation",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation"]
+						},
+						"description": "Create a new observation. This triggers the goal evaluation engine. The returned ID is saved to the `observationId` collection variable."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Observation (Goal Achievement Trigger)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Observation created with ID\", function () {",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.id).to.be.a(\"string\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"code\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"29463-7\", \"display\": \"Body Weight\"}]},\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"effectiveDateTime\": \"2026-03-04T14:00:00Z\",\n  \"valueQuantity\": {\"value\": 79, \"unit\": \"kg\", \"system\": \"http://unitsofmeasure.org\", \"code\": \"kg\"},\n  \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\", \"code\": \"vital-signs\", \"display\": \"Vital Signs\"}]}]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Observation",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation"]
+						},
+						"description": "This observation's weight (79kg) is below the goal target (80kg), which should trigger automatic goal achievement. After running this request, check the goal's lifecycleStatus — it should be updated to 'achieved'."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Observation by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Observation/{{observationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation", "{{observationId}}"]
+						},
+						"description": "Retrieve a single observation by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Observation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Observation/{{observationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation", "{{observationId}}"]
+						},
+						"description": "Delete an observation by ID. Returns 204 No Content on success."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for FHIR Observation resources. Creating observations triggers the goal evaluation engine, which can automatically mark goals as achieved."
+		},
+		{
+			"name": "5. AI Suggestions",
+			"item": [
+				{
+					"name": "Suggest Goals",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"patientId\": \"{{patientId}}\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Goal/$suggest",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal", "$suggest"]
+						},
+						"description": "Uses AI (OpenAI if configured) or rule-based fallback to suggest personalized health goals based on patient observations."
+					},
+					"response": []
+				}
+			],
+			"description": "AI-powered goal suggestion endpoint. Uses OpenAI when an API key is configured, otherwise falls back to a rule-based engine."
+		},
+		{
+			"name": "6. Server Info",
+			"item": [
+				{
+					"name": "FHIR CapabilityStatement",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/metadata",
+							"host": ["{{baseUrl}}"],
+							"path": ["metadata"]
+						},
+						"description": "Returns the FHIR CapabilityStatement describing the server's supported resources, interactions, and operations."
+					},
+					"response": []
+				}
+			],
+			"description": "Server metadata and conformance information."
+		}
+	]
+}
