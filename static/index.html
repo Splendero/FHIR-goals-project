@@ -50,15 +50,16 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ===== LAYOUT ===== */
-.app{display:flex;height:100vh;padding-top:var(--header-h)}
+.app-wrapper{display:flex;flex-direction:column;height:100vh;padding-top:var(--header-h)}
+.app{display:flex;flex:1;min-height:0}
 .sidebar{
-  width:var(--sidebar-w);min-width:var(--sidebar-w);height:calc(100vh - var(--header-h));
+  width:var(--sidebar-w);min-width:var(--sidebar-w);
   background:var(--surface);border-right:1px solid var(--border);
   display:flex;flex-direction:column;overflow:hidden;
 }
 .main{flex:1;overflow-y:auto;padding:24px;min-width:0}
 .events-panel{
-  width:var(--events-w);min-width:var(--events-w);height:calc(100vh - var(--header-h));
+  width:var(--events-w);min-width:var(--events-w);
   background:var(--surface);border-left:1px solid var(--border);
   display:flex;flex-direction:column;overflow:hidden;
 }
@@ -294,7 +295,108 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .toast.success{background:var(--accent)}
 .toast.error{background:var(--danger)}
 .toast.info{background:var(--primary)}
+
+/* ===== TERMINAL PANEL ===== */
+.terminal-resize-handle{
+  height:4px;background:#2a2b3d;cursor:ns-resize;flex-shrink:0;
+  transition:background .15s;
+}
+.terminal-resize-handle:hover,.terminal-resize-handle.active{background:#0066CC}
+.terminal-panel{
+  height:300px;min-height:120px;
+  background:#1a1b26;display:flex;flex-direction:column;flex-shrink:0;
+}
+.terminal-toolbar{
+  display:flex;align-items:center;height:36px;min-height:36px;
+  padding:0 12px;background:#21222c;border-bottom:1px solid #333;
+  gap:8px;flex-shrink:0;
+}
+.terminal-toolbar .term-label{
+  font-size:12px;font-weight:600;color:#a9b1d6;text-transform:uppercase;
+  letter-spacing:.5px;display:flex;align-items:center;gap:6px;
+}
+.terminal-toolbar .term-label svg{width:14px;height:14px;color:#7aa2f7}
+.term-tabs{display:flex;gap:2px;margin-left:8px}
+.term-tab{
+  padding:4px 12px;border:none;background:transparent;color:#565f89;
+  font-size:12px;font-weight:500;cursor:pointer;border-radius:4px 4px 0 0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;transition:all .15s;
+}
+.term-tab:hover{color:#a9b1d6}
+.term-tab.active{background:#1a1b26;color:#c0caf5}
+.term-toolbar-actions{margin-left:auto;display:flex;gap:4px}
+.term-toolbar-btn{
+  background:none;border:none;color:#565f89;cursor:pointer;
+  padding:4px 6px;border-radius:4px;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.term-toolbar-btn:hover{background:#292e42;color:#a9b1d6}
+.term-toolbar-btn.active{color:#7aa2f7}
+.terminal-body{flex:1;display:flex;min-height:0;overflow:hidden}
+.terminal-container{flex:1;min-width:0;position:relative}
+.terminal-container .xterm{height:100%;padding:4px 0 0 4px}
+
+/* ===== POSTMAN SIDEBAR ===== */
+.postman-sidebar{
+  width:280px;min-width:280px;
+  background:#1e1f2e;border-right:1px solid #2a2b3d;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.postman-header{
+  padding:10px 12px;border-bottom:1px solid #2a2b3d;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.postman-header h3{
+  font-size:11px;text-transform:uppercase;letter-spacing:.8px;
+  color:#565f89;font-weight:600;
+}
+.postman-list{flex:1;overflow-y:auto;padding:4px 0}
+.postman-list::-webkit-scrollbar{width:4px}
+.postman-list::-webkit-scrollbar-thumb{background:#2a2b3d;border-radius:4px}
+.postman-folder{margin-bottom:2px}
+.postman-folder-header{
+  display:flex;align-items:center;gap:6px;padding:6px 12px;
+  cursor:pointer;color:#a9b1d6;font-size:12px;font-weight:600;
+  transition:background .15s;user-select:none;
+}
+.postman-folder-header:hover{background:#292e42}
+.postman-folder-header svg{width:12px;height:12px;transition:transform .2s;flex-shrink:0}
+.postman-folder-header.open svg{transform:rotate(90deg)}
+.postman-folder-items{display:none;padding-left:8px}
+.postman-folder-header.open+.postman-folder-items{display:block}
+.postman-item{
+  display:flex;align-items:center;gap:8px;padding:5px 12px 5px 20px;
+  cursor:pointer;transition:background .15s;border-radius:4px;margin:1px 4px;
+}
+.postman-item:hover{background:#292e42}
+.postman-method{
+  font-size:9px;font-weight:700;letter-spacing:.3px;
+  padding:2px 5px;border-radius:3px;min-width:32px;text-align:center;
+  font-family:'SF Mono',Monaco,Consolas,monospace;
+}
+.method-GET{background:#1a3a2a;color:#4ade80}
+.method-POST{background:#1a2a3a;color:#60a5fa}
+.method-PUT{background:#3a2a1a;color:#fb923c}
+.method-DELETE{background:#3a1a1a;color:#f87171}
+.postman-item-name{
+  font-size:12px;color:#787c99;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;transition:color .15s;
+}
+.postman-item:hover .postman-item-name{color:#c0caf5}
+
+/* ===== HEADER TERMINAL TOGGLE ===== */
+.header-terminal-toggle{
+  display:flex;align-items:center;gap:6px;margin-left:16px;
+  padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);
+  font-size:12px;font-weight:500;cursor:pointer;
+  transition:all .2s;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+.header-terminal-toggle:hover{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}
+.header-terminal-toggle.active{background:rgba(122,162,247,.15);color:#7aa2f7;border-color:rgba(122,162,247,.3)}
+.header-terminal-toggle svg{width:14px;height:14px}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
 </head>
 <body>
 
@@ -307,12 +409,17 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
     </svg>
     FHIR Goals Engine
   </div>
+  <button class="header-terminal-toggle" id="termToggleBtn" onclick="toggleTerminal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+    Terminal
+  </button>
   <div class="header-status">
     <div class="status-dot" id="serverDot"></div>
     <span id="serverStatus">Connected</span>
   </div>
 </header>
 
+<div class="app-wrapper">
 <div class="app">
   <!-- LEFT SIDEBAR -->
   <aside class="sidebar">
@@ -374,6 +481,41 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   </aside>
 </div>
 
+<!-- TERMINAL RESIZE HANDLE -->
+<div class="terminal-resize-handle" id="termResizeHandle" style="display:none"></div>
+
+<!-- TERMINAL PANEL -->
+<div class="terminal-panel" id="terminalPanel" style="display:none">
+  <div class="terminal-toolbar">
+    <span class="term-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      Terminal
+    </span>
+    <div class="term-toolbar-actions">
+      <button class="term-toolbar-btn active" id="postmanToggleBtn" onclick="togglePostmanSidebar()" title="Toggle API Collections">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </button>
+      <button class="term-toolbar-btn" onclick="clearTerminal()" title="Clear Terminal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+      </button>
+      <button class="term-toolbar-btn" onclick="toggleTerminal()" title="Close Terminal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="terminal-body">
+    <div class="postman-sidebar" id="postmanSidebar">
+      <div class="postman-header">
+        <h3>API Collections</h3>
+      </div>
+      <div class="postman-list" id="postmanList"></div>
+    </div>
+    <div class="terminal-container" id="terminalContainer"></div>
+  </div>
+</div>
+
+</div><!-- close app-wrapper -->
+
 <!-- SUGGESTIONS MODAL -->
 <div class="modal-overlay" id="suggestModal">
   <div class="modal">
@@ -390,6 +532,10 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.js"></script>
 
 <script>
 const state = {
@@ -900,6 +1046,263 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('suggestModal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeModal();
 });
+
+// ─── TERMINAL ───
+const termState = {
+  open: false,
+  ws: null,
+  term: null,
+  fitAddon: null,
+  postmanData: null,
+  postmanVisible: true,
+};
+
+function toggleTerminal() {
+  termState.open = !termState.open;
+  const panel = document.getElementById('terminalPanel');
+  const handle = document.getElementById('termResizeHandle');
+  const btn = document.getElementById('termToggleBtn');
+
+  if (termState.open) {
+    panel.style.display = '';
+    handle.style.display = '';
+    btn.classList.add('active');
+    if (!termState.term) {
+      initTerminal();
+    } else {
+      termState.fitAddon.fit();
+    }
+    loadPostmanCollection();
+  } else {
+    panel.style.display = 'none';
+    handle.style.display = 'none';
+    btn.classList.remove('active');
+  }
+}
+
+function initTerminal() {
+  const term = new Terminal({
+    cursorBlink: true,
+    fontSize: 13,
+    fontFamily: "'SF Mono', Monaco, 'Cascadia Code', Consolas, 'Liberation Mono', Menlo, monospace",
+    theme: {
+      background: '#1a1b26',
+      foreground: '#c0caf5',
+      cursor: '#c0caf5',
+      cursorAccent: '#1a1b26',
+      selectionBackground: 'rgba(122,162,247,0.3)',
+      black: '#15161e',
+      red: '#f7768e',
+      green: '#9ece6a',
+      yellow: '#e0af68',
+      blue: '#7aa2f7',
+      magenta: '#bb9af7',
+      cyan: '#7dcfff',
+      white: '#a9b1d6',
+      brightBlack: '#414868',
+      brightRed: '#f7768e',
+      brightGreen: '#9ece6a',
+      brightYellow: '#e0af68',
+      brightBlue: '#7aa2f7',
+      brightMagenta: '#bb9af7',
+      brightCyan: '#7dcfff',
+      brightWhite: '#c0caf5',
+    },
+    allowProposedApi: true,
+  });
+
+  const fitAddon = new FitAddon.FitAddon();
+  const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+  term.loadAddon(fitAddon);
+  term.loadAddon(webLinksAddon);
+
+  const container = document.getElementById('terminalContainer');
+  term.open(container);
+  fitAddon.fit();
+
+  termState.term = term;
+  termState.fitAddon = fitAddon;
+
+  connectTerminalWS();
+
+  new ResizeObserver(() => {
+    if (termState.open && termState.fitAddon) {
+      termState.fitAddon.fit();
+    }
+  }).observe(container);
+}
+
+function connectTerminalWS() {
+  if (termState.ws) {
+    termState.ws.onclose = null;
+    termState.ws.close();
+  }
+
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${proto}//${location.host}/ws/terminal`);
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = () => {
+    const dims = termState.fitAddon.proposeDimensions();
+    if (dims) {
+      ws.send(JSON.stringify({ type: 'resize', cols: dims.cols, rows: dims.rows }));
+    }
+  };
+
+  ws.onmessage = (evt) => {
+    const data = evt.data instanceof ArrayBuffer ? new Uint8Array(evt.data) : evt.data;
+    termState.term.write(data);
+  };
+
+  ws.onclose = () => {
+    termState.term.write('\r\n\x1b[31mTerminal disconnected. Reopening...\x1b[0m\r\n');
+    setTimeout(() => {
+      if (termState.open) connectTerminalWS();
+    }, 2000);
+  };
+
+  ws.onerror = () => ws.close();
+
+  termState.ws = ws;
+
+  termState.term.onData((data) => {
+    if (ws.readyState === WebSocket.OPEN) ws.send(data);
+  });
+
+  termState.term.onResize(({ cols, rows }) => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'resize', cols, rows }));
+    }
+  });
+}
+
+function clearTerminal() {
+  if (termState.term) termState.term.clear();
+}
+
+function writeToTerminal(text) {
+  if (!termState.open) toggleTerminal();
+  setTimeout(() => {
+    if (termState.ws && termState.ws.readyState === WebSocket.OPEN) {
+      for (const ch of text) termState.ws.send(ch);
+    }
+  }, termState.term ? 100 : 800);
+}
+
+// ─── TERMINAL RESIZE HANDLE ───
+(function setupResize() {
+  const handle = document.getElementById('termResizeHandle');
+  const panel = document.getElementById('terminalPanel');
+  let startY, startH;
+
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    startY = e.clientY;
+    startH = panel.offsetHeight;
+    handle.classList.add('active');
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', onStop);
+  });
+
+  function onDrag(e) {
+    const delta = startY - e.clientY;
+    const newH = Math.max(120, Math.min(window.innerHeight - 200, startH + delta));
+    panel.style.height = newH + 'px';
+    if (termState.fitAddon) termState.fitAddon.fit();
+  }
+
+  function onStop() {
+    handle.classList.remove('active');
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', onStop);
+  }
+})();
+
+// ─── POSTMAN COLLECTIONS ───
+function togglePostmanSidebar() {
+  termState.postmanVisible = !termState.postmanVisible;
+  const sidebar = document.getElementById('postmanSidebar');
+  const btn = document.getElementById('postmanToggleBtn');
+  sidebar.style.display = termState.postmanVisible ? '' : 'none';
+  btn.classList.toggle('active', termState.postmanVisible);
+  if (termState.fitAddon) termState.fitAddon.fit();
+}
+
+async function loadPostmanCollection() {
+  if (termState.postmanData) return;
+  try {
+    const res = await fetch('/api/postman-collection');
+    termState.postmanData = await res.json();
+    renderPostmanCollection();
+  } catch (e) {
+    document.getElementById('postmanList').innerHTML =
+      '<div style="padding:12px;color:#565f89;font-size:12px">Failed to load collection</div>';
+  }
+}
+
+function renderPostmanCollection() {
+  const data = termState.postmanData;
+  if (!data?.item) return;
+  const list = document.getElementById('postmanList');
+  list.innerHTML = data.item.map((folder, fi) => {
+    const items = (folder.item || []).map((req, ri) => {
+      const method = req.request?.method || 'GET';
+      const name = req.name || 'Untitled';
+      return `<div class="postman-item" onclick="sendPostmanRequest(${fi},${ri})" title="${esc(name)}">
+        <span class="postman-method method-${method}">${method}</span>
+        <span class="postman-item-name">${esc(name)}</span>
+      </div>`;
+    }).join('');
+    return `<div class="postman-folder">
+      <div class="postman-folder-header" onclick="this.classList.toggle('open')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        ${esc(folder.name || 'Folder')}
+      </div>
+      <div class="postman-folder-items">${items}</div>
+    </div>`;
+  }).join('');
+}
+
+function sendPostmanRequest(folderIdx, reqIdx) {
+  const data = termState.postmanData;
+  if (!data?.item?.[folderIdx]?.item?.[reqIdx]) return;
+  const req = data.item[folderIdx].item[reqIdx].request;
+  if (!req) return;
+
+  const method = req.method || 'GET';
+  let url = req.url?.raw || '';
+
+  url = url.replace(/\{\{baseUrl\}\}/g, window.location.origin);
+  if (state.selectedPatient?.id) {
+    url = url.replace(/\{\{patientId\}\}/g, state.selectedPatient.id);
+  }
+  const goalId = state.goals?.[0]?.id;
+  if (goalId) url = url.replace(/\{\{goalId\}\}/g, goalId);
+  const cpId = state.carePlans?.[0]?.id;
+  if (cpId) url = url.replace(/\{\{carePlanId\}\}/g, cpId);
+
+  let curl = `curl -s -X ${method}`;
+
+  if (req.header) {
+    for (const h of req.header) {
+      curl += ` \\\n  -H '${h.key}: ${h.value}'`;
+    }
+  }
+
+  if (req.body?.raw) {
+    let body = req.body.raw;
+    body = body.replace(/\{\{baseUrl\}\}/g, window.location.origin);
+    if (state.selectedPatient?.id) body = body.replace(/\{\{patientId\}\}/g, state.selectedPatient.id);
+    if (goalId) body = body.replace(/\{\{goalId\}\}/g, goalId);
+    if (cpId) body = body.replace(/\{\{carePlanId\}\}/g, cpId);
+    const escaped = body.replace(/'/g, "'\\''");
+    curl += ` \\\n  -d '${escaped}'`;
+  }
+
+  curl += ` \\\n  '${url}' | python3 -m json.tool 2>/dev/null || true`;
+
+  writeToTerminal(curl + '\n');
+}
 
 // ─── INIT ───
 loadPatients();

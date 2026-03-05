@@ -24,6 +24,7 @@ import (
 	"github.com/spencerosborn/fhir-goals-engine/internal/observation"
 	"github.com/spencerosborn/fhir-goals-engine/internal/patient"
 	"github.com/spencerosborn/fhir-goals-engine/internal/suggestion"
+	"github.com/spencerosborn/fhir-goals-engine/internal/terminal"
 	"github.com/spencerosborn/fhir-goals-engine/internal/websocket"
 )
 
@@ -78,6 +79,11 @@ func main() {
 	}))
 
 	r.Get("/ws", hub.HandleWebSocket)
+	r.Get("/ws/terminal", terminal.HandleWebSocket)
+
+	r.Get("/api/postman-collection", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./postman/FHIR_Goals_Engine.postman_collection.json")
+	})
 
 	r.Route("/", func(r chi.Router) {
 		patientHandler.RegisterRoutes(r)
