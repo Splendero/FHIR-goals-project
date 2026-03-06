@@ -34,22 +34,6 @@ CREATE TABLE goals (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE care_plans (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    status VARCHAR(50) NOT NULL DEFAULT 'active',
-    intent VARCHAR(50) NOT NULL DEFAULT 'plan',
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    subject_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-    period_start DATE,
-    period_end DATE,
-    goal_ids UUID[] DEFAULT '{}',
-    category_code VARCHAR(100),
-    category_display VARCHAR(255),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
 CREATE TABLE observations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     status VARCHAR(50) NOT NULL DEFAULT 'final',
@@ -70,7 +54,6 @@ CREATE TABLE observations (
 CREATE INDEX idx_goals_subject ON goals(subject_id);
 CREATE INDEX idx_goals_status ON goals(lifecycle_status);
 CREATE INDEX idx_goals_category ON goals(category_code);
-CREATE INDEX idx_care_plans_subject ON care_plans(subject_id);
 CREATE INDEX idx_observations_subject ON observations(subject_id);
 CREATE INDEX idx_observations_code ON observations(code_code);
 CREATE INDEX idx_observations_date ON observations(effective_date);

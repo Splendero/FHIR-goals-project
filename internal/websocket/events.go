@@ -4,7 +4,6 @@ const (
 	EventGoalAchieved   = "goal.achieved"
 	EventGoalUpdated    = "goal.updated"
 	EventGoalSuggested  = "goal.suggested"
-	EventCarePlanUpdated = "careplan.updated"
 )
 
 type Event struct {

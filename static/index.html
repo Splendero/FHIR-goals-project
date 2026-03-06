@@ -168,24 +168,6 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   background:var(--primary-light);color:var(--primary);
 }
 
-/* ===== CARE PLAN CARDS ===== */
-.careplan-card{
-  background:var(--surface);border-radius:var(--radius-lg);padding:20px;
-  border:1px solid var(--border);margin-bottom:16px;transition:all .2s;
-}
-.careplan-card:hover{box-shadow:var(--shadow-md)}
-.careplan-card .cp-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
-.careplan-card .cp-desc{font-size:13px;color:var(--text-secondary);margin-bottom:12px;line-height:1.5}
-.careplan-meta{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:var(--text-muted);margin-bottom:12px}
-.cp-goals-list{padding-top:10px;border-top:1px solid var(--border)}
-.cp-goals-list h4{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;font-weight:600}
-.cp-goal-ref{
-  display:flex;align-items:center;gap:6px;padding:6px 10px;
-  background:var(--bg);border-radius:var(--radius);font-size:13px;
-  color:var(--text-secondary);margin-bottom:4px;
-}
-.cp-goal-ref svg{width:14px;height:14px;color:var(--primary);flex-shrink:0}
-
 /* ===== EVENTS PANEL ===== */
 .events-header{
   padding:14px 16px;border-bottom:1px solid var(--border);
@@ -208,12 +190,10 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .event-item.goal-achieved{border-left-color:var(--gold)}
 .event-item.goal-updated{border-left-color:var(--primary)}
 .event-item.goal-suggested{border-left-color:var(--accent)}
-.event-item.careplan-updated{border-left-color:#8B5CF6}
 .event-type{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
 .event-type.goal-achieved{color:var(--gold)}
 .event-type.goal-updated{color:var(--primary)}
 .event-type.goal-suggested{color:var(--accent)}
-.event-type.careplan-updated{color:#8B5CF6}
 .event-desc{font-size:12px;color:var(--text-secondary);line-height:1.4}
 .event-time{font-size:10px;color:var(--text-muted);margin-top:4px}
 
@@ -337,6 +317,50 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .terminal-container .xterm{height:100%;padding:4px 0 0 4px}
 .terminal-container .xterm-screen{max-width:100%!important}
 
+/* ===== RAW PREVIEW ===== */
+.raw-preview{
+  flex:1;min-width:0;max-width:100%;overflow:auto;
+  background:#1a1b26;padding:20px 24px;
+  font-family:'SF Mono',Monaco,'Cascadia Code',Consolas,monospace;
+  font-size:13px;line-height:1.6;color:#c0caf5;
+  display:none;flex-direction:column;gap:16px;
+}
+.raw-preview.visible{display:flex}
+.raw-preview-header{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding-bottom:14px;border-bottom:1px solid #292e42;
+}
+.raw-preview-method{
+  font-size:11px;font-weight:700;letter-spacing:.4px;
+  padding:4px 10px;border-radius:4px;
+  font-family:'SF Mono',Monaco,Consolas,monospace;
+}
+.raw-preview-url{
+  font-size:13px;color:#7aa2f7;word-break:break-all;
+}
+.raw-preview-body{
+  flex:1;overflow:auto;white-space:pre;word-wrap:normal;
+  color:#c0caf5;margin:0;tab-size:2;
+  background:#1a1b26;border:1px solid #292e42;border-radius:6px;
+  padding:14px 16px;resize:none;outline:none;
+  font-family:'SF Mono',Monaco,'Cascadia Code',Consolas,monospace;
+  font-size:13px;line-height:1.6;
+}
+.raw-preview-body:focus{border-color:#7aa2f7}
+.raw-preview-actions{
+  display:flex;gap:8px;padding-top:14px;border-top:1px solid #292e42;
+}
+.raw-preview-actions button{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border:none;border-radius:6px;
+  font-size:12px;font-weight:600;cursor:pointer;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  transition:all .15s;
+}
+.raw-send-btn{background:#7aa2f7;color:#1a1b26}
+.raw-send-btn:hover{background:#89b4fa}
+.raw-preview-body::placeholder{color:#565f89;font-style:italic}
+
 /* ===== POSTMAN SIDEBAR ===== */
 .postman-sidebar{
   width:280px;min-width:280px;
@@ -440,7 +464,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
     <div id="noSelection" class="empty-state" style="height:100%">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <h3>Select a Patient</h3>
-      <p>Choose a patient from the sidebar to view their health goals and care plans.</p>
+      <p>Choose a patient from the sidebar to view their health goals.</p>
     </div>
     <div id="patientView" style="display:none">
       <div class="main-header">
@@ -450,15 +474,8 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
           Suggest Goals
         </button>
       </div>
-      <div class="tab-bar">
-        <button class="tab-btn active" data-tab="goals" onclick="switchTab('goals')">Goals</button>
-        <button class="tab-btn" data-tab="careplans" onclick="switchTab('careplans')">Care Plans</button>
-      </div>
       <div id="goalsTab">
         <div class="goals-grid" id="goalsGrid"></div>
-      </div>
-      <div id="careplansTab" style="display:none">
-        <div id="careplansList"></div>
       </div>
     </div>
   </main>
@@ -490,8 +507,11 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="terminal-toolbar">
     <span class="term-label">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-      Terminal
     </span>
+    <div class="term-tabs">
+      <button class="term-tab active" data-termtab="terminal" onclick="switchTerminalTab('terminal')">Terminal</button>
+      <button class="term-tab" data-termtab="raw" onclick="switchTerminalTab('raw')">Raw</button>
+    </div>
     <div class="term-toolbar-actions">
       <button class="term-toolbar-btn active" id="postmanToggleBtn" onclick="togglePostmanSidebar()" title="Toggle API Collections">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -512,6 +532,19 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
       <div class="postman-list" id="postmanList"></div>
     </div>
     <div class="terminal-container" id="terminalContainer"></div>
+    <div class="raw-preview" id="rawPreviewContainer">
+      <div class="raw-preview-header">
+        <span class="raw-preview-method" id="rawMethod">GET</span>
+        <span class="raw-preview-url" id="rawUrl"></span>
+      </div>
+      <textarea class="raw-preview-body" id="rawBody" spellcheck="false" placeholder="Select a request from the sidebar to preview it."></textarea>
+      <div class="raw-preview-actions">
+        <button class="raw-send-btn" id="rawSendBtn" onclick="sendRawToTerminal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Send to Terminal
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -544,7 +577,6 @@ const state = {
   selectedPatient: null,
   goals: [],
   observations: [],
-  carePlans: [],
   ws: null,
   wsRetryDelay: 1000,
   wsMaxDelay: 30000,
@@ -654,9 +686,8 @@ async function selectPatient(id) {
   document.getElementById('patientView').style.display = '';
   const gIcon = icons[p.gender] || '';
   document.getElementById('patientName').innerHTML = `${esc(patientName(p))} <span class="patient-gender">${gIcon}</span>`;
-  switchTab('goals');
   connectWebSocket(id);
-  await Promise.all([loadGoals(id), loadObservations(id), loadCarePlans(id)]);
+  await Promise.all([loadGoals(id), loadObservations(id)]);
 }
 
 // ─── GOALS ───
@@ -770,68 +801,6 @@ async function loadObservations(patientId) {
   } catch (_) {
     state.observations = [];
   }
-}
-
-// ─── CARE PLANS ───
-async function loadCarePlans(patientId) {
-  const el = document.getElementById('careplansList');
-  try {
-    const bundle = await api(`/CarePlan?patient=${patientId}`);
-    state.carePlans = extractResources(bundle);
-  } catch (_) {
-    state.carePlans = [];
-  }
-}
-
-function renderCarePlans() {
-  const el = document.getElementById('careplansList');
-  if (state.carePlans.length === 0) {
-    el.innerHTML = `<div class="empty-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
-      <h3>No Care Plans</h3>
-      <p>No care plans have been created for this patient yet.</p>
-    </div>`;
-    return;
-  }
-  el.innerHTML = state.carePlans.map(cp => {
-    const statusClass = 'badge-' + (cp.status || 'unknown').replace(/\s+/g, '-');
-    const period = cp.period;
-    let periodStr = '';
-    if (period) {
-      const parts = [];
-      if (period.start) parts.push(formatDate(period.start));
-      if (period.end) parts.push(formatDate(period.end));
-      periodStr = parts.join(' \u2192 ');
-    }
-    const goals = cp.goal || [];
-    return `<div class="careplan-card">
-      <div class="cp-title">${esc(cp.title || 'Untitled Care Plan')}</div>
-      <div class="cp-desc">${esc(cp.description || 'No description provided.')}</div>
-      <div class="careplan-meta">
-        <span class="badge ${statusClass}">${esc(cp.status || 'unknown')}</span>
-        <span class="badge badge-proposed">${esc(cp.intent || '')}</span>
-        ${periodStr ? `<span>${icons.calendar} ${periodStr}</span>` : ''}
-      </div>
-      ${goals.length ? `<div class="cp-goals-list">
-        <h4>Referenced Goals (${goals.length})</h4>
-        ${goals.map(ref => {
-          const goalId = (ref.reference || '').replace('Goal/', '');
-          const matched = state.goals.find(g => g.id === goalId);
-          const label = matched?.description?.text || ref.display || ref.reference || 'Unknown Goal';
-          return `<div class="cp-goal-ref">${icons.target} ${esc(label)}</div>`;
-        }).join('')}
-      </div>` : ''}
-    </div>`;
-  }).join('');
-}
-
-// ─── TABS ───
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  document.getElementById('goalsTab').style.display = tab === 'goals' ? '' : 'none';
-  document.getElementById('careplansTab').style.display = tab === 'careplans' ? '' : 'none';
-  if (tab === 'careplans') renderCarePlans();
-  if (tab === 'goals') renderGoals();
 }
 
 // ─── SUGGEST GOALS ───
@@ -993,9 +962,6 @@ function appendEvent(event) {
   if (event.type === 'goal.achieved' || event.type === 'goal.updated' || event.type === 'goal.suggested') {
     if (state.selectedPatient) refreshPatientData();
   }
-  if (event.type === 'careplan.updated') {
-    if (state.selectedPatient) loadCarePlans(state.selectedPatient.id);
-  }
 }
 
 let _refreshTimer = null;
@@ -1056,6 +1022,8 @@ const termState = {
   fitAddon: null,
   postmanData: null,
   postmanVisible: true,
+  activeTab: 'terminal',
+  pendingReqMeta: null,
 };
 
 function toggleTerminal() {
@@ -1182,6 +1150,72 @@ function clearTerminal() {
   if (termState.term) termState.term.clear();
 }
 
+function switchTerminalTab(tab) {
+  termState.activeTab = tab;
+  const termContainer = document.getElementById('terminalContainer');
+  const rawContainer = document.getElementById('rawPreviewContainer');
+  document.querySelectorAll('.term-tab').forEach(b => b.classList.toggle('active', b.dataset.termtab === tab));
+  if (tab === 'terminal') {
+    termContainer.style.display = '';
+    rawContainer.classList.remove('visible');
+    if (termState.fitAddon) termState.fitAddon.fit();
+  } else {
+    termContainer.style.display = 'none';
+    rawContainer.classList.add('visible');
+  }
+}
+
+function populateRawPreview(req, resolvedUrl) {
+  const method = req.method || 'GET';
+  const methodEl = document.getElementById('rawMethod');
+  const urlEl = document.getElementById('rawUrl');
+  const bodyEl = document.getElementById('rawBody');
+
+  methodEl.textContent = method;
+  methodEl.className = 'raw-preview-method method-' + method;
+  urlEl.textContent = resolvedUrl;
+
+  termState.pendingReqMeta = { method, headers: req.header || [], url: resolvedUrl };
+
+  if (req.body?.raw) {
+    try {
+      const parsed = JSON.parse(req.body.raw);
+      bodyEl.value = JSON.stringify(parsed, null, 2);
+    } catch (_) {
+      bodyEl.value = req.body.raw;
+    }
+    bodyEl.disabled = false;
+    bodyEl.placeholder = '';
+  } else {
+    bodyEl.value = '';
+    bodyEl.disabled = true;
+    bodyEl.placeholder = 'No request body for this endpoint.';
+  }
+}
+
+function buildCurlFromRawEditor() {
+  const meta = termState.pendingReqMeta;
+  if (!meta) return null;
+  let curl = `curl -s -X ${meta.method}`;
+  for (const h of meta.headers) {
+    curl += ` -H '${h.key}: ${h.value}'`;
+  }
+  const bodyEl = document.getElementById('rawBody');
+  if (bodyEl.value.trim()) {
+    const body = bodyEl.value.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    const escaped = body.replace(/'/g, "'\\''");
+    curl += ` -d '${escaped}'`;
+  }
+  curl += ` '${meta.url}' | python3 -m json.tool 2>/dev/null || true`;
+  return curl;
+}
+
+function sendRawToTerminal() {
+  const curl = buildCurlFromRawEditor();
+  if (!curl) return;
+  writeToTerminal(curl + '\n');
+}
+
 function writeToTerminal(text) {
   if (!termState.open) toggleTerminal();
   setTimeout(() => {
@@ -1200,10 +1234,8 @@ function scheduleTerminalRefresh() {
     await loadPatients();
     if (state.selectedPatient) {
       const pid = state.selectedPatient.id;
-      await Promise.all([loadGoals(pid), loadObservations(pid), loadCarePlans(pid)]);
-      const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
-      if (activeTab === 'goals') renderGoals();
-      else if (activeTab === 'careplans') renderCarePlans();
+      await Promise.all([loadGoals(pid), loadObservations(pid)]);
+      renderGoals();
     }
   }, 1500);
 }
@@ -1282,50 +1314,63 @@ function renderPostmanCollection() {
   }).join('');
 }
 
+function replacePostmanVars(s) {
+  s = s.replace(/\{\{baseUrl\}\}/g, window.location.origin);
+  const patientId = state.selectedPatient?.id;
+  const goalId = state.goals?.[0]?.id;
+  const obsId = state.observations?.[0]?.id;
+  if (patientId) s = s.replace(/example-patient-id/g, patientId);
+  if (goalId) s = s.replace(/example-goal-id/g, goalId);
+  if (obsId) s = s.replace(/example-observation-id/g, obsId);
+  return s;
+}
+
+function buildCurlCommand(req, resolvedUrl) {
+  const method = req.method || 'GET';
+  let curl = `curl -s -X ${method}`;
+  if (req.header) {
+    for (const h of req.header) {
+      curl += ` -H '${h.key}: ${h.value}'`;
+    }
+  }
+  if (req.body?.raw) {
+    let body = replacePostmanVars(req.body.raw);
+    body = body.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    const escaped = body.replace(/'/g, "'\\''");
+    curl += ` -d '${escaped}'`;
+  }
+  curl += ` '${resolvedUrl}' | python3 -m json.tool 2>/dev/null || true`;
+  return curl;
+}
+
 function sendPostmanRequest(folderIdx, reqIdx) {
   const data = termState.postmanData;
   if (!data?.item?.[folderIdx]?.item?.[reqIdx]) return;
   const req = data.item[folderIdx].item[reqIdx].request;
   if (!req) return;
 
-  const method = req.method || 'GET';
-  let url = req.url?.raw || '';
+  const resolvedUrl = replacePostmanVars(req.url?.raw || '');
+  const resolvedReq = { ...req, body: req.body ? { ...req.body, raw: replacePostmanVars(req.body.raw || '') } : null };
 
-  const patientId = state.selectedPatient?.id;
-  const goalId = state.goals?.[0]?.id;
-  const cpId = state.carePlans?.[0]?.id;
-  const obsId = state.observations?.[0]?.id;
+  populateRawPreview(resolvedReq, resolvedUrl);
 
-  function replaceVars(s) {
-    s = s.replace(/\{\{baseUrl\}\}/g, window.location.origin);
-    if (patientId) s = s.replace(/example-patient-id/g, patientId);
-    if (goalId) s = s.replace(/example-goal-id/g, goalId);
-    if (cpId) s = s.replace(/example-careplan-id/g, cpId);
-    if (obsId) s = s.replace(/example-observation-id/g, obsId);
-    return s;
+  if (termState.activeTab === 'terminal') {
+    writeToTerminal(buildCurlCommand(req, resolvedUrl));
+  } else {
+    switchTerminalTab('raw');
   }
-
-  url = replaceVars(url);
-
-  let curl = `curl -s -X ${method}`;
-
-  if (req.header) {
-    for (const h of req.header) {
-      curl += ` -H '${h.key}: ${h.value}'`;
-    }
-  }
-
-  if (req.body?.raw) {
-    let body = replaceVars(req.body.raw);
-    body = body.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-    const escaped = body.replace(/'/g, "'\\''");
-    curl += ` -d '${escaped}'`;
-  }
-
-  curl += ` '${url}' | python3 -m json.tool 2>/dev/null || true`;
-
-  writeToTerminal(curl);
 }
+
+// ─── RAW BODY TAB KEY ───
+document.getElementById('rawBody').addEventListener('keydown', function(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = this.selectionStart;
+    const end = this.selectionEnd;
+    this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+    this.selectionStart = this.selectionEnd = start + 2;
+  }
+});
 
 // ─── INIT ───
 loadPatients();

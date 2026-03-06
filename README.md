@@ -18,7 +18,7 @@ docker compose up --build
 
 The server starts at **http://localhost:8080** with an embedded dashboard at the root path.
 
-Seed sample data (10 patients, 29 goals, 10 care plans, 70+ observations):
+Seed sample data (10 patients, 29 goals, 70+ observations):
 
 ```bash
 make seed
@@ -50,7 +50,6 @@ Base URL: `http://localhost:8080` | Content-Type: `application/fhir+json`
 |---|---|---|
 | **Patient** | `GET/POST /Patient`, `GET/PUT/DELETE /Patient/{id}` | `name`, `gender` |
 | **Goal** | `GET/POST /Goal`, `GET/PUT/DELETE /Goal/{id}` | `patient`, `status`, `category` |
-| **CarePlan** | `GET/POST /CarePlan`, `GET/PUT/DELETE /CarePlan/{id}` | `patient`, `status` |
 | **Observation** | `GET/POST /Observation`, `GET/PUT/DELETE /Observation/{id}` | `patient`, `code`, `date` |
 | **AI Suggest** | `POST /Goal/$suggest` | body: `{"patientId": "..."}` |
 | **WebSocket** | `ws://localhost:8080/ws?patient={id}` | -- |
@@ -94,7 +93,6 @@ internal/
   fhir/                      Shared FHIR R4 types (Bundle, OperationOutcome)
   patient/                   Patient handler, service, repository
   goal/                      Goal handler, service, repository, evaluator
-  careplan/                  CarePlan handler, service, repository
   observation/               Observation handler, service, repository
   suggestion/                AI service, prompt builder, rule-based fallback
   websocket/                 Hub, client, event types

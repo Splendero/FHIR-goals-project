@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "fhir-goals-engine-collection",
 		"name": "FHIR Goals Engine",
-		"description": "Postman collection for the FHIR R4 Health Goals Engine API. Covers Patient, Goal, CarePlan, Observation CRUD, and AI-powered goal suggestions.",
+		"description": "Postman collection for the FHIR R4 Health Goals Engine API. Covers Patient, Goal, Observation CRUD, and AI-powered goal suggestions.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -227,117 +227,7 @@
 			"description": "CRUD operations for FHIR Goal resources."
 		},
 		{
-			"name": "3. Care Plans",
-			"item": [
-				{
-					"name": "Search Care Plans for Patient",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/fhir+json"
-							}
-						],
-						"url": {
-							"raw": "{{baseUrl}}/CarePlan?patient=example-patient-id",
-							"host": ["{{baseUrl}}"],
-							"path": ["CarePlan"],
-							"query": [
-								{
-									"key": "patient",
-									"value": "example-patient-id"
-								}
-							]
-						},
-						"description": "Search all care plans linked to a patient."
-					},
-					"response": []
-				},
-				{
-					"name": "Create Care Plan",
-				"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/fhir+json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"CarePlan\",\n  \"status\": \"active\",\n  \"intent\": \"plan\",\n  \"title\": \"Weight Management Program\",\n  \"description\": \"Comprehensive weight management through diet and exercise\",\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"goal\": [\n    {\n      \"reference\": \"Goal/example-goal-id\"\n    }\n  ],\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"code\": \"weight-management\",\n          \"display\": \"Weight Management\"\n        }\n      ]\n    }\n  ]\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/CarePlan",
-							"host": ["{{baseUrl}}"],
-							"path": ["CarePlan"]
-						},
-						"description": "Create a new care plan."
-					},
-					"response": []
-				},
-				{
-					"name": "Get Care Plan by ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/fhir+json"
-							}
-						],
-						"url": {
-							"raw": "{{baseUrl}}/CarePlan/example-careplan-id",
-							"host": ["{{baseUrl}}"],
-							"path": ["CarePlan", "example-careplan-id"]
-						},
-						"description": "Retrieve a single care plan by ID."
-					},
-					"response": []
-				},
-				{
-					"name": "Update Care Plan",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/fhir+json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"CarePlan\",\n  \"status\": \"completed\",\n  \"intent\": \"plan\",\n  \"title\": \"Weight Management Program\",\n  \"description\": \"Comprehensive weight management through diet and exercise\",\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"goal\": [\n    {\n      \"reference\": \"Goal/example-goal-id\"\n    }\n  ],\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"code\": \"weight-management\",\n          \"display\": \"Weight Management\"\n        }\n      ]\n    }\n  ]\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/CarePlan/example-careplan-id",
-							"host": ["{{baseUrl}}"],
-							"path": ["CarePlan", "example-careplan-id"]
-						},
-						"description": "Update an existing care plan. This example changes status from active to completed."
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Care Plan",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/CarePlan/example-careplan-id",
-							"host": ["{{baseUrl}}"],
-							"path": ["CarePlan", "example-careplan-id"]
-						},
-						"description": "Delete a care plan by ID. Returns 204 No Content on success."
-					},
-					"response": []
-				}
-			],
-			"description": "CRUD operations for FHIR CarePlan resources."
-		},
-		{
-			"name": "4. Observations",
+			"name": "3. Observations",
 			"item": [
 				{
 					"name": "Search Observations for Patient",
@@ -447,7 +337,7 @@
 			"description": "CRUD operations for FHIR Observation resources. Creating observations triggers the goal evaluation engine, which can automatically mark goals as achieved."
 		},
 		{
-			"name": "5. AI Suggestions",
+			"name": "4. AI Suggestions",
 			"item": [
 				{
 					"name": "Suggest Goals",
@@ -476,7 +366,7 @@
 			"description": "AI-powered goal suggestion endpoint. Uses OpenAI when an API key is configured, otherwise falls back to a rule-based engine."
 		},
 		{
-			"name": "6. Server Info",
+			"name": "5. Server Info",
 			"item": [
 				{
 					"name": "FHIR CapabilityStatement",

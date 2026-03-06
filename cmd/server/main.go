@@ -17,7 +17,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
-	"github.com/spencerosborn/fhir-goals-engine/internal/careplan"
 	"github.com/spencerosborn/fhir-goals-engine/internal/config"
 	"github.com/spencerosborn/fhir-goals-engine/internal/fhir"
 	"github.com/spencerosborn/fhir-goals-engine/internal/goal"
@@ -48,13 +47,10 @@ func main() {
 
 	patientRepo := patient.NewRepository(db)
 	goalRepo := goal.NewRepository(db)
-	carePlanRepo := careplan.NewRepository(db)
 	obsRepo := observation.NewRepository(db)
 
 	patientSvc := patient.NewService(patientRepo)
 	goalSvc := goal.NewService(goalRepo)
-	carePlanSvc := careplan.NewService(carePlanRepo)
-
 	evaluator := goal.NewEvaluator(goalRepo)
 	obsSvc := observation.NewService(obsRepo, evaluator, hub)
 
@@ -62,7 +58,6 @@ func main() {
 
 	patientHandler := patient.NewHandler(patientSvc)
 	goalHandler := goal.NewHandler(goalSvc)
-	carePlanHandler := careplan.NewHandler(carePlanSvc)
 	obsHandler := observation.NewHandler(obsSvc)
 
 	r := chi.NewRouter()
@@ -88,7 +83,6 @@ func main() {
 	r.Route("/", func(r chi.Router) {
 		patientHandler.RegisterRoutes(r)
 		goalHandler.RegisterRoutes(r)
-		carePlanHandler.RegisterRoutes(r)
 		obsHandler.RegisterRoutes(r)
 	})
 
@@ -197,7 +191,6 @@ func capabilityHandler(w http.ResponseWriter, r *http.Request) {
 				"resource": []map[string]interface{}{
 					{"type": "Patient", "interaction": []map[string]string{{"code": "read"}, {"code": "search-type"}, {"code": "create"}, {"code": "update"}, {"code": "delete"}}},
 					{"type": "Goal", "interaction": []map[string]string{{"code": "read"}, {"code": "search-type"}, {"code": "create"}, {"code": "update"}, {"code": "delete"}}},
-					{"type": "CarePlan", "interaction": []map[string]string{{"code": "read"}, {"code": "search-type"}, {"code": "create"}, {"code": "update"}, {"code": "delete"}}},
 					{"type": "Observation", "interaction": []map[string]string{{"code": "read"}, {"code": "search-type"}, {"code": "create"}, {"code": "update"}, {"code": "delete"}}},
 				},
 				"operation": []map[string]string{

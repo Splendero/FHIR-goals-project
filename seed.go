@@ -162,54 +162,6 @@ func main() {
 		}
 	}
 
-	// ── Care Plans ──
-
-	type carePlan struct {
-		status       string
-		title        string
-		description  string
-		subjectID    uuid.UUID
-		periodStart  time.Time
-		periodEnd    *time.Time
-		goalIDs      []uuid.UUID
-		catCode      string
-		catDisplay   string
-	}
-
-	carePlans := []carePlan{
-		{"active", "Diabetes Management Plan", "Comprehensive plan to manage Type 2 diabetes through HbA1c control and weight management", patients[0].id,
-			ago(80), &future90, []uuid.UUID{goals[0].id, goals[1].id}, "736271009", "Diabetes care plan"},
-		{"active", "Cardiovascular Health Plan", "Blood pressure and exercise program for cardiovascular risk reduction", patients[1].id,
-			ago(85), &future60, []uuid.UUID{goals[3].id, goals[4].id, goals[5].id}, "734163000", "Cardiovascular care plan"},
-		{"active", "Active Lifestyle Plan", "Step-based exercise program with mental health support", patients[2].id,
-			ago(60), &future30, []uuid.UUID{goals[6].id, goals[7].id, goals[8].id}, "386229000", "Activity management plan"},
-		{"active", "Diabetes Management Plan", "Integrated diabetes and weight management for improved metabolic health", patients[3].id,
-			ago(88), &future90, []uuid.UUID{goals[9].id, goals[10].id, goals[11].id}, "736271009", "Diabetes care plan"},
-		{"completed", "Weight Management Program", "Targeted weight loss through dietary changes and activity", patients[4].id,
-			ago(90), nil, []uuid.UUID{goals[12].id, goals[13].id}, "408289007", "Weight management plan"},
-		{"active", "Cardiovascular Health Plan", "BP reduction through medication adherence and lifestyle changes", patients[5].id,
-			ago(75), &future60, []uuid.UUID{goals[14].id, goals[15].id, goals[16].id}, "734163000", "Cardiovascular care plan"},
-		{"active", "Diabetes Management Plan", "HbA1c and weight reduction for pre-diabetic patient", patients[6].id,
-			ago(70), &future90, []uuid.UUID{goals[17].id, goals[18].id}, "736271009", "Diabetes care plan"},
-		{"active", "Mental Wellness Program", "Blood pressure control with stress and sleep management", patients[7].id,
-			ago(80), &future60, []uuid.UUID{goals[19].id, goals[20].id, goals[21].id}, "390857005", "Mental health care plan"},
-		{"active", "Active Lifestyle Plan", "Holistic fitness and weight management with stress reduction", patients[8].id,
-			ago(72), &future90, []uuid.UUID{goals[22].id, goals[23].id, goals[24].id}, "386229000", "Activity management plan"},
-		{"draft", "Comprehensive Geriatric Plan", "Multi-factor risk reduction for senior patient", patients[9].id,
-			ago(82), &future90, []uuid.UUID{goals[25].id, goals[26].id, goals[27].id, goals[28].id}, "773130005", "Geriatric care plan"},
-	}
-
-	for _, cp := range carePlans {
-		_, err := db.Exec(`
-			INSERT INTO care_plans (id, status, intent, title, description, subject_id, period_start, period_end, goal_ids, category_code, category_display, created_at, updated_at)
-			VALUES ($1,$2,'plan',$3,$4,$5,$6,$7,$8,$9,$10,$11,$11)`,
-			uuid.New(), cp.status, cp.title, cp.description, cp.subjectID, cp.periodStart, cp.periodEnd,
-			pq.Array(cp.goalIDs), cp.catCode, cp.catDisplay, cp.periodStart)
-		if err != nil {
-			log.Fatalf("insert care plan %q: %v", cp.title, err)
-		}
-	}
-
 	// ── Observations ──
 
 	type obs struct {
@@ -281,6 +233,6 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Seeded: %d patients, %d goals, %d care plans, %d observations\n",
-		len(patients), len(goals), len(carePlans), obsCount)
+	fmt.Printf("Seeded: %d patients, %d goals, %d observations\n",
+		len(patients), len(goals), obsCount)
 }
