@@ -3,6 +3,7 @@ package goal
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/spencerosborn/fhir-goals-engine/internal/fhir"
 )
@@ -49,13 +50,25 @@ var decreaseGoalCodes = map[string]bool{
 	"4548-4":  true, // HbA1c
 }
 
+// supportedObservationCodes are the only LOINC codes that trigger goal evaluation.
+var supportedObservationCodes = map[string]bool{
+	"29463-7": true, // body weight
+	"8480-6":  true, // systolic BP
+	"4548-4":  true, // HbA1c
+	"41950-7": true, // steps per day
+}
+
 func meetsTarget(g Goal, observationCode string, observationValue float64) bool {
+	if observationCode == "" || !supportedObservationCodes[observationCode] {
+		return false
+	}
 	for _, t := range g.Target {
 		if t.Measure == nil || t.DetailQuantity == nil {
 			continue
 		}
 		for _, c := range t.Measure.Coding {
-			if c.Code != observationCode {
+			goalMeasureCode := strings.TrimSpace(c.Code)
+			if goalMeasureCode == "" || goalMeasureCode != observationCode {
 				continue
 			}
 			target := t.DetailQuantity.Value

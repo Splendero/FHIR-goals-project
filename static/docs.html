@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Guide — FHIR Goals Engine</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --primary:#0066CC;
+      --primary-dark:#004C99;
+      --accent:#00A878;
+      --bg:#F0F4F8;
+      --surface:#FFFFFF;
+      --text:#1A2332;
+      --text-secondary:#5A6B7F;
+      --text-muted:#8896A6;
+      --border:#E2E8F0;
+      --radius:8px;
+      --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    .header{
+      height:56px;display:flex;align-items:center;padding:0 24px;
+      background:linear-gradient(135deg,#0A1628 0%,#162744 100%);
+      color:#fff;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.2);
+    }
+    .header a{color:rgba(255,255,255,.85);text-decoration:none;font-size:14px;display:flex;align-items:center;gap:6px}
+    .header a:hover{color:#fff}
+    .header .logo{font-weight:700;font-size:17px;margin-right:24px}
+    .header .logo a{color:#fff}
+    .wrap{max-width:820px;margin:0 auto;padding:32px 24px 48px}
+    h1{font-size:28px;margin-bottom:8px;color:var(--text)}
+    h2{font-size:20px;margin-top:32px;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid var(--border);color:var(--text)}
+    h3{font-size:16px;margin-top:20px;margin-bottom:8px;color:var(--text)}
+    p{margin-bottom:12px;color:var(--text-secondary)}
+    ul,ol{margin:0 0 16px 20px;color:var(--text-secondary)}
+    li{margin-bottom:4px}
+    code{background:var(--border);padding:2px 6px;border-radius:4px;font-size:13px;font-family:'SF Mono',Monaco,Consolas,monospace}
+    pre{background:#1a1b26;color:#c0caf5;padding:16px;border-radius:var(--radius);overflow-x:auto;font-size:13px;line-height:1.5;margin:12px 0}
+    pre code{background:none;padding:0;color:inherit}
+    table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+    th,td{border:1px solid var(--border);padding:10px 14px;text-align:left}
+    th{background:var(--primary-light,#E8F1FB);font-weight:600;color:var(--text)}
+    td{color:var(--text-secondary)}
+    .note{background:#E8F1FB;border-left:4px solid var(--primary);padding:12px 16px;margin:16px 0;border-radius:0 var(--radius) var(--radius) 0}
+    .note p:last-child{margin-bottom:0}
+    a{color:var(--primary);text-decoration:none}
+    a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <span class="logo"><a href="/">FHIR Goals Engine</a></span>
+  <a href="/">← Dashboard</a>
+</header>
+
+<div class="wrap">
+
+  <h1>API Guide</h1>
+  <p>How to send requests to the FHIR Goals Engine and which codes to use for Goals and Observations.</p>
+
+  <h2>Base URL &amp; Headers</h2>
+  <p>Use your server origin (e.g. <code>http://localhost:8080</code> or your deployed URL). All API requests should use:</p>
+  <ul>
+    <li><strong>Content-Type:</strong> <code>application/fhir+json</code></li>
+    <li><strong>Accept:</strong> <code>application/fhir+json</code> (optional; JSON is the default)</li>
+  </ul>
+  <p>Search and read responses return FHIR <code>Bundle</code> or single resources. Errors return <code>OperationOutcome</code>.</p>
+
+  <h2>Endpoints Overview</h2>
+  <table>
+    <thead>
+      <tr><th>Resource</th><th>Endpoints</th><th>Search params</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Patient</td><td><code>GET/POST /Patient</code>, <code>GET/PUT/DELETE /Patient/{id}</code></td><td><code>name</code>, <code>gender</code></td></tr>
+      <tr><td>Goal</td><td><code>GET/POST /Goal</code>, <code>GET/PUT/DELETE /Goal/{id}</code></td><td><code>patient</code>, <code>status</code>, <code>category</code></td></tr>
+      <tr><td>Observation</td><td><code>GET/POST /Observation</code>, <code>GET/PUT/DELETE /Observation/{id}</code></td><td><code>patient</code>, <code>code</code>, <code>date</code></td></tr>
+      <tr><td>Metadata</td><td><code>GET /metadata</code></td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Goals — Codes &amp; Structure</h2>
+
+  <h3>Goal lifecycle status</h3>
+  <p>Use one of these for <code>lifecycleStatus</code>. Only goals with status <code>active</code> are evaluated when new observations are created.</p>
+  <table>
+    <thead>
+      <tr><th>Status</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>proposed</code></td><td>Proposed</td></tr>
+      <tr><td><code>planned</code></td><td>Planned</td></tr>
+      <tr><td><code>accepted</code></td><td>Accepted</td></tr>
+      <tr><td><code>active</code></td><td>Active (evaluated by engine)</td></tr>
+      <tr><td><code>on-hold</code></td><td>On hold</td></tr>
+      <tr><td><code>completed</code></td><td>Completed</td></tr>
+      <tr><td><code>cancelled</code></td><td>Cancelled</td></tr>
+      <tr><td><code>entered-in-error</code></td><td>Entered in error</td></tr>
+      <tr><td><code>rejected</code></td><td>Rejected</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Goal achievement status</h3>
+  <p>Optional. Set when updating a goal (e.g. <code>achieved</code> when the target is met). The engine sets this automatically when an observation meets the target.</p>
+  <table>
+    <thead>
+      <tr><th>Code</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>in-progress</code></td><td>In progress</td></tr>
+      <tr><td><code>improving</code></td><td>Improving</td></tr>
+      <tr><td><code>worsening</code></td><td>Worsening</td></tr>
+      <tr><td><code>no-change</code></td><td>No change</td></tr>
+      <tr><td><code>achieved</code></td><td>Achieved</td></tr>
+      <tr><td><code>sustaining</code></td><td>Sustaining</td></tr>
+      <tr><td><code>not-achieved</code></td><td>Not achieved</td></tr>
+      <tr><td><code>no-progress</code></td><td>No progress</td></tr>
+      <tr><td><code>not-attainable</code></td><td>Not attainable</td></tr>
+    </tbody>
+  </table>
+
+  <h3>LOINC codes for goal targets (auto-achievement)</h3>
+  <p>Goal targets use <code>measure.coding[].code</code> from LOINC. Only the codes below trigger automatic goal achievement when you create an observation with the same code.</p>
+  <table>
+    <thead>
+      <tr><th>LOINC code</th><th>Display</th><th>Direction</th><th>Goal achieved when</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>29463-7</code></td><td>Body weight</td><td>Decrease</td><td>Observation value ≤ target</td></tr>
+      <tr><td><code>8480-6</code></td><td>Systolic BP</td><td>Decrease</td><td>Observation value ≤ target</td></tr>
+      <tr><td><code>4548-4</code></td><td>HbA1c</td><td>Decrease</td><td>Observation value ≤ target</td></tr>
+      <tr><td><code>41950-7</code></td><td>Steps per day</td><td>Increase</td><td>Observation value ≥ target</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Example: Create a Goal</h3>
+  <pre><code>POST /Goal
+Content-Type: application/fhir+json
+
+{
+  "resourceType": "Goal",
+  "lifecycleStatus": "active",
+  "description": { "text": "Reduce body weight to 80 kg" },
+  "subject": { "reference": "Patient/YOUR-PATIENT-ID" },
+  "category": [{
+    "coding": [{
+      "system": "http://terminology.hl7.org/CodeSystem/goal-category",
+      "code": "dietary",
+      "display": "Dietary"
+    }]
+  }],
+  "target": [{
+    "measure": {
+      "coding": [{ "system": "http://loinc.org", "code": "29463-7", "display": "Body Weight" }]
+    },
+    "detailQuantity": { "value": 80, "unit": "kg", "system": "http://unitsofmeasure.org" },
+    "dueDate": "2026-06-01"
+  }],
+  "startDate": "2026-03-01"
+}</code></pre>
+
+  <h2>Observations — Codes &amp; Structure</h2>
+
+  <h3>Observation status</h3>
+  <p>Required. Use one of:</p>
+  <table>
+    <thead>
+      <tr><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>registered</code></td></tr>
+      <tr><td><code>preliminary</code></td></tr>
+      <tr><td><code>final</code></td></tr>
+      <tr><td><code>amended</code></td></tr>
+      <tr><td><code>corrected</code></td></tr>
+      <tr><td><code>cancelled</code></td></tr>
+      <tr><td><code>entered-in-error</code></td></tr>
+      <tr><td><code>unknown</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Observation code (LOINC)</h3>
+  <p>Required. <code>code.coding[0].code</code> must be set. Use the same LOINC codes as in goal targets if you want the engine to evaluate goals (see table above).</p>
+
+  <h3>Observation category</h3>
+  <p>Optional. <code>category</code> classifies the type of observation (e.g. vital signs vs lab). It does not affect goal evaluation; use it for display or filtering.</p>
+  <ul>
+    <li><strong>system</strong> — The code system. For FHIR observation categories use <code>http://terminology.hl7.org/CodeSystem/observation-category</code>.</li>
+    <li><strong>code</strong> — A code from that system, e.g. <code>vital-signs</code>, <code>laboratory</code>, <code>activity</code>, <code>social-history</code>, <code>imaging</code>, <code>procedure</code>, <code>exam</code>, or <code>survey</code>.</li>
+    <li><strong>display</strong> — Human-readable label (e.g. "Vital Signs", "Laboratory").</li>
+  </ul>
+  <p>Common pairings: weight/BP → <code>vital-signs</code>; HbA1c → <code>laboratory</code>; steps → <code>activity</code>. You can omit <code>category</code> if you don’t need it.</p>
+
+  <h3>Examples: Create an Observation (triggers goal evaluation)</h3>
+  <p>Use the same LOINC code and unit as the goal target. For <strong>decrease</strong> goals (weight, BP, HbA1c), value must be <strong>≤</strong> target. For <strong>increase</strong> goals (steps), value must be <strong>≥</strong> target.</p>
+
+  <p><strong>Body weight</strong> (goal “reduce to 80 kg”):</p>
+  <pre><code>POST /Observation
+Content-Type: application/fhir+json
+
+{
+  "resourceType": "Observation",
+  "status": "final",
+  "code": {
+    "coding": [{ "system": "http://loinc.org", "code": "29463-7", "display": "Body Weight" }]
+  },
+  "subject": { "reference": "Patient/YOUR-PATIENT-ID" },
+  "effectiveDateTime": "2026-03-06T12:00:00Z",
+  "valueQuantity": {
+    "value": 79,
+    "unit": "kg",
+    "system": "http://unitsofmeasure.org",
+    "code": "kg"
+  },
+  "category": [{
+    "coding": [{
+      "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+      "code": "vital-signs",
+      "display": "Vital Signs"
+    }]
+  }]
+}</code></pre>
+  <p>If the patient has an active goal with target measure <code>29463-7</code> and target value 80, this observation (79 kg) will mark that goal as achieved.</p>
+
+  <p><strong>HbA1c</strong> (goal “reduce below 6.5%”):</p>
+  <pre><code>POST /Observation
+Content-Type: application/fhir+json
+
+{
+  "resourceType": "Observation",
+  "status": "final",
+  "code": {
+    "coding": [{ "system": "http://loinc.org", "code": "4548-4", "display": "Hemoglobin A1c" }]
+  },
+  "subject": { "reference": "Patient/YOUR-PATIENT-ID" },
+  "effectiveDateTime": "2026-03-06T14:00:00Z",
+  "valueQuantity": {
+    "value": 6.4,
+    "unit": "%",
+    "system": "http://unitsofmeasure.org",
+    "code": "%"
+  },
+  "category": [{
+    "coding": [{
+      "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+      "code": "laboratory",
+      "display": "Laboratory"
+    }]
+  }]
+}</code></pre>
+  <p>Value must be ≤ 6.5 to achieve a “below 6.5%” goal. A <code>goal.achieved</code> WebSocket event is broadcast when the goal is marked achieved.</p>
+
+  <h2>Patients — Minimal Create</h2>
+  <pre><code>POST /Patient
+Content-Type: application/fhir+json
+
+{
+  "resourceType": "Patient",
+  "active": true,
+  "name": [{ "family": "Smith", "given": ["Jane"] }],
+  "gender": "female",
+  "birthDate": "1985-05-20"
+}</code></pre>
+
+  <h2>Testing from the dashboard</h2>
+  <p>Open the <strong>Terminal</strong> from the header, then use the <strong>Raw</strong> tab or the API collections sidebar to send requests. Replace <code>example-patient-id</code>, <code>example-goal-id</code>, and <code>example-observation-id</code> with IDs from your selected patient (the UI substitutes these when you pick a request from the sidebar). You can also download the Postman collection from <code>GET /api/postman-collection</code>.</p>
+
+</div>
+
+</body>
+</html>

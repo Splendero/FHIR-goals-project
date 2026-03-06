@@ -113,7 +113,10 @@ func (s *Service) evaluateAndBroadcast(ctx context.Context, o *Observation) {
 
 	code := ""
 	if len(o.Code.Coding) > 0 {
-		code = o.Code.Coding[0].Code
+		code = strings.TrimSpace(o.Code.Coding[0].Code)
+	}
+	if code == "" {
+		return
 	}
 
 	achievedGoals, err := s.goalEvaluator.EvaluateGoals(ctx, subjectID, code, o.ValueQuantity.Value)

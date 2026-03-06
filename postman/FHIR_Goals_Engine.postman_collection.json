@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "fhir-goals-engine-collection",
 		"name": "FHIR Goals Engine",
-		"description": "Postman collection for the FHIR R4 Health Goals Engine API. Covers Patient, Goal, Observation CRUD, and AI-powered goal suggestions.",
+		"description": "Postman collection for the FHIR R4 Health Goals Engine API. Covers Patient, Goal, and Observation CRUD operations.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -337,36 +337,7 @@
 			"description": "CRUD operations for FHIR Observation resources. Creating observations triggers the goal evaluation engine, which can automatically mark goals as achieved."
 		},
 		{
-			"name": "4. AI Suggestions",
-			"item": [
-				{
-					"name": "Suggest Goals",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/fhir+json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"patientId\": \"example-patient-id\"\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/Goal/$suggest",
-							"host": ["{{baseUrl}}"],
-							"path": ["Goal", "$suggest"]
-						},
-						"description": "Uses AI (OpenAI if configured) or rule-based fallback to suggest personalized health goals based on patient observations."
-					},
-					"response": []
-				}
-			],
-			"description": "AI-powered goal suggestion endpoint. Uses OpenAI when an API key is configured, otherwise falls back to a rule-based engine."
-		},
-		{
-			"name": "5. Server Info",
+			"name": "4. Server Info",
 			"item": [
 				{
 					"name": "FHIR CapabilityStatement",
