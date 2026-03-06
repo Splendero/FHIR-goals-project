@@ -9,22 +9,6 @@
 		{
 			"key": "baseUrl",
 			"value": "http://localhost:8080"
-		},
-		{
-			"key": "patientId",
-			"value": ""
-		},
-		{
-			"key": "goalId",
-			"value": ""
-		},
-		{
-			"key": "carePlanId",
-			"value": ""
-		},
-		{
-			"key": "observationId",
-			"value": ""
 		}
 	],
 	"item": [
@@ -33,29 +17,7 @@
 			"item": [
 				{
 					"name": "Search All Patients",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test(\"Status is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Response is a Bundle\", function () {",
-									"    var json = pm.response.json();",
-									"    pm.expect(json.resourceType).to.eql(\"Bundle\");",
-									"});",
-									"",
-									"if (pm.response.json().entry && pm.response.json().entry.length > 0) {",
-									"    pm.collectionVariables.set(\"patientId\", pm.response.json().entry[0].resource.id);",
-									"}"
-								]
-							}
-						}
-					],
-					"request": {
+				"request": {
 						"method": "GET",
 						"header": [
 							{
@@ -68,32 +30,13 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["Patient"]
 						},
-						"description": "Search all patients. If results exist, the first patient's ID is saved to the `patientId` collection variable."
+						"description": "Search all patients."
 					},
 					"response": []
 				},
 				{
 					"name": "Create Patient",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test(\"Status is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"pm.test(\"Patient created with ID\", function () {",
-									"    var json = pm.response.json();",
-									"    pm.expect(json.id).to.be.a(\"string\");",
-									"    pm.collectionVariables.set(\"patientId\", json.id);",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
+				"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -103,14 +46,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"Patient\",\n  \"active\": true,\n  \"name\": [{\"family\": \"Demo\", \"given\": [\"Postman\"]}],\n  \"gender\": \"male\",\n  \"birthDate\": \"1990-01-15\"\n}"
+							"raw": "{\n  \"resourceType\": \"Patient\",\n  \"active\": true,\n  \"name\": [\n    {\n      \"family\": \"Smith\",\n      \"given\": [\"John\"]\n    }\n  ],\n  \"gender\": \"male\",\n  \"birthDate\": \"1990-01-15\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/Patient",
 							"host": ["{{baseUrl}}"],
 							"path": ["Patient"]
 						},
-						"description": "Create a new patient. The returned ID is saved to the `patientId` collection variable."
+						"description": "Create a new patient."
 					},
 					"response": []
 				},
@@ -125,9 +68,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/Patient/{{patientId}}",
+							"raw": "{{baseUrl}}/Patient/example-patient-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["Patient", "{{patientId}}"]
+							"path": ["Patient", "example-patient-id"]
 						},
 						"description": "Retrieve a single patient by ID."
 					},
@@ -145,12 +88,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"Patient\",\n  \"active\": true,\n  \"name\": [{\"family\": \"Demo\", \"given\": [\"Postman\"]}],\n  \"gender\": \"female\",\n  \"birthDate\": \"1990-01-15\"\n}"
+							"raw": "{\n  \"resourceType\": \"Patient\",\n  \"active\": true,\n  \"name\": [\n    {\n      \"family\": \"Smith\",\n      \"given\": [\"John\"]\n    }\n  ],\n  \"gender\": \"female\",\n  \"birthDate\": \"1990-01-15\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/Patient/{{patientId}}",
+							"raw": "{{baseUrl}}/Patient/example-patient-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["Patient", "{{patientId}}"]
+							"path": ["Patient", "example-patient-id"]
 						},
 						"description": "Update an existing patient. This example changes gender from male to female."
 					},
@@ -162,9 +105,9 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/Patient/{{patientId}}",
+							"raw": "{{baseUrl}}/Patient/example-patient-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["Patient", "{{patientId}}"]
+							"path": ["Patient", "example-patient-id"]
 						},
 						"description": "Delete a patient by ID. Returns 204 No Content on success."
 					},
@@ -187,13 +130,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/Goal?patient={{patientId}}",
+							"raw": "{{baseUrl}}/Goal?patient=example-patient-id",
 							"host": ["{{baseUrl}}"],
 							"path": ["Goal"],
 							"query": [
 								{
 									"key": "patient",
-									"value": "{{patientId}}"
+									"value": "example-patient-id"
 								}
 							]
 						},
@@ -203,26 +146,7 @@
 				},
 				{
 					"name": "Create Goal",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test(\"Status is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"pm.test(\"Goal created with ID\", function () {",
-									"    var json = pm.response.json();",
-									"    pm.expect(json.id).to.be.a(\"string\");",
-									"    pm.collectionVariables.set(\"goalId\", json.id);",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
+				"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -232,14 +156,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"Goal\",\n  \"lifecycleStatus\": \"active\",\n  \"description\": {\"text\": \"Reduce body weight to 80kg\"},\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/goal-category\", \"code\": \"dietary\", \"display\": \"Dietary\"}]}],\n  \"target\": [{\n    \"measure\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"29463-7\", \"display\": \"Body Weight\"}]},\n    \"detailQuantity\": {\"value\": 80, \"unit\": \"kg\", \"system\": \"http://unitsofmeasure.org\"},\n    \"dueDate\": \"2026-06-01\"\n  }],\n  \"startDate\": \"2026-03-04\"\n}"
+							"raw": "{\n  \"resourceType\": \"Goal\",\n  \"lifecycleStatus\": \"active\",\n  \"description\": {\n    \"text\": \"Reduce body weight to 80kg\"\n  },\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/goal-category\",\n          \"code\": \"dietary\",\n          \"display\": \"Dietary\"\n        }\n      ]\n    }\n  ],\n  \"target\": [\n    {\n      \"measure\": {\n        \"coding\": [\n          {\n            \"system\": \"http://loinc.org\",\n            \"code\": \"29463-7\",\n            \"display\": \"Body Weight\"\n          }\n        ]\n      },\n      \"detailQuantity\": {\n        \"value\": 80,\n        \"unit\": \"kg\",\n        \"system\": \"http://unitsofmeasure.org\"\n      },\n      \"dueDate\": \"2026-06-01\"\n    }\n  ],\n  \"startDate\": \"2026-03-04\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/Goal",
 							"host": ["{{baseUrl}}"],
 							"path": ["Goal"]
 						},
-						"description": "Create a new health goal for the patient. The returned ID is saved to the `goalId` collection variable."
+						"description": "Create a new health goal for the patient."
 					},
 					"response": []
 				},
@@ -254,9 +178,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/Goal/{{goalId}}",
+							"raw": "{{baseUrl}}/Goal/example-goal-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["Goal", "{{goalId}}"]
+							"path": ["Goal", "example-goal-id"]
 						},
 						"description": "Retrieve a single goal by ID."
 					},
@@ -274,12 +198,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"Goal\",\n  \"lifecycleStatus\": \"on-hold\",\n  \"description\": {\"text\": \"Reduce body weight to 80kg\"},\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/goal-category\", \"code\": \"dietary\", \"display\": \"Dietary\"}]}],\n  \"target\": [{\n    \"measure\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"29463-7\", \"display\": \"Body Weight\"}]},\n    \"detailQuantity\": {\"value\": 80, \"unit\": \"kg\", \"system\": \"http://unitsofmeasure.org\"},\n    \"dueDate\": \"2026-06-01\"\n  }],\n  \"startDate\": \"2026-03-04\"\n}"
+							"raw": "{\n  \"resourceType\": \"Goal\",\n  \"lifecycleStatus\": \"on-hold\",\n  \"description\": {\n    \"text\": \"Reduce body weight to 80kg\"\n  },\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/goal-category\",\n          \"code\": \"dietary\",\n          \"display\": \"Dietary\"\n        }\n      ]\n    }\n  ],\n  \"target\": [\n    {\n      \"measure\": {\n        \"coding\": [\n          {\n            \"system\": \"http://loinc.org\",\n            \"code\": \"29463-7\",\n            \"display\": \"Body Weight\"\n          }\n        ]\n      },\n      \"detailQuantity\": {\n        \"value\": 80,\n        \"unit\": \"kg\",\n        \"system\": \"http://unitsofmeasure.org\"\n      },\n      \"dueDate\": \"2026-06-01\"\n    }\n  ],\n  \"startDate\": \"2026-03-04\"\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/Goal/{{goalId}}",
+							"raw": "{{baseUrl}}/Goal/example-goal-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["Goal", "{{goalId}}"]
+							"path": ["Goal", "example-goal-id"]
 						},
 						"description": "Update an existing goal. This example changes lifecycleStatus from active to on-hold."
 					},
@@ -291,9 +215,9 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/Goal/{{goalId}}",
+							"raw": "{{baseUrl}}/Goal/example-goal-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["Goal", "{{goalId}}"]
+							"path": ["Goal", "example-goal-id"]
 						},
 						"description": "Delete a goal by ID. Returns 204 No Content on success."
 					},
@@ -316,13 +240,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/CarePlan?patient={{patientId}}",
+							"raw": "{{baseUrl}}/CarePlan?patient=example-patient-id",
 							"host": ["{{baseUrl}}"],
 							"path": ["CarePlan"],
 							"query": [
 								{
 									"key": "patient",
-									"value": "{{patientId}}"
+									"value": "example-patient-id"
 								}
 							]
 						},
@@ -332,26 +256,7 @@
 				},
 				{
 					"name": "Create Care Plan",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test(\"Status is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"pm.test(\"CarePlan created with ID\", function () {",
-									"    var json = pm.response.json();",
-									"    pm.expect(json.id).to.be.a(\"string\");",
-									"    pm.collectionVariables.set(\"carePlanId\", json.id);",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
+				"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -361,14 +266,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"CarePlan\",\n  \"status\": \"active\",\n  \"intent\": \"plan\",\n  \"title\": \"Weight Management Program\",\n  \"description\": \"Comprehensive weight management through diet and exercise\",\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"goal\": [{\"reference\": \"Goal/{{goalId}}\"}],\n  \"category\": [{\"coding\": [{\"code\": \"weight-management\", \"display\": \"Weight Management\"}]}]\n}"
+							"raw": "{\n  \"resourceType\": \"CarePlan\",\n  \"status\": \"active\",\n  \"intent\": \"plan\",\n  \"title\": \"Weight Management Program\",\n  \"description\": \"Comprehensive weight management through diet and exercise\",\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"goal\": [\n    {\n      \"reference\": \"Goal/example-goal-id\"\n    }\n  ],\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"code\": \"weight-management\",\n          \"display\": \"Weight Management\"\n        }\n      ]\n    }\n  ]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/CarePlan",
 							"host": ["{{baseUrl}}"],
 							"path": ["CarePlan"]
 						},
-						"description": "Create a new care plan. The returned ID is saved to the `carePlanId` collection variable."
+						"description": "Create a new care plan."
 					},
 					"response": []
 				},
@@ -383,9 +288,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/CarePlan/{{carePlanId}}",
+							"raw": "{{baseUrl}}/CarePlan/example-careplan-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["CarePlan", "{{carePlanId}}"]
+							"path": ["CarePlan", "example-careplan-id"]
 						},
 						"description": "Retrieve a single care plan by ID."
 					},
@@ -403,12 +308,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"CarePlan\",\n  \"status\": \"completed\",\n  \"intent\": \"plan\",\n  \"title\": \"Weight Management Program\",\n  \"description\": \"Comprehensive weight management through diet and exercise\",\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"goal\": [{\"reference\": \"Goal/{{goalId}}\"}],\n  \"category\": [{\"coding\": [{\"code\": \"weight-management\", \"display\": \"Weight Management\"}]}]\n}"
+							"raw": "{\n  \"resourceType\": \"CarePlan\",\n  \"status\": \"completed\",\n  \"intent\": \"plan\",\n  \"title\": \"Weight Management Program\",\n  \"description\": \"Comprehensive weight management through diet and exercise\",\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"goal\": [\n    {\n      \"reference\": \"Goal/example-goal-id\"\n    }\n  ],\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"code\": \"weight-management\",\n          \"display\": \"Weight Management\"\n        }\n      ]\n    }\n  ]\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/CarePlan/{{carePlanId}}",
+							"raw": "{{baseUrl}}/CarePlan/example-careplan-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["CarePlan", "{{carePlanId}}"]
+							"path": ["CarePlan", "example-careplan-id"]
 						},
 						"description": "Update an existing care plan. This example changes status from active to completed."
 					},
@@ -420,9 +325,9 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/CarePlan/{{carePlanId}}",
+							"raw": "{{baseUrl}}/CarePlan/example-careplan-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["CarePlan", "{{carePlanId}}"]
+							"path": ["CarePlan", "example-careplan-id"]
 						},
 						"description": "Delete a care plan by ID. Returns 204 No Content on success."
 					},
@@ -445,13 +350,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/Observation?patient={{patientId}}",
+							"raw": "{{baseUrl}}/Observation?patient=example-patient-id",
 							"host": ["{{baseUrl}}"],
 							"path": ["Observation"],
 							"query": [
 								{
 									"key": "patient",
-									"value": "{{patientId}}"
+									"value": "example-patient-id"
 								}
 							]
 						},
@@ -461,26 +366,7 @@
 				},
 				{
 					"name": "Create Observation",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test(\"Status is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"pm.test(\"Observation created with ID\", function () {",
-									"    var json = pm.response.json();",
-									"    pm.expect(json.id).to.be.a(\"string\");",
-									"    pm.collectionVariables.set(\"observationId\", json.id);",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
+				"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -490,38 +376,20 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"code\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"29463-7\", \"display\": \"Body Weight\"}]},\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"effectiveDateTime\": \"2026-03-04T10:00:00Z\",\n  \"valueQuantity\": {\"value\": 85, \"unit\": \"kg\", \"system\": \"http://unitsofmeasure.org\", \"code\": \"kg\"},\n  \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\", \"code\": \"vital-signs\", \"display\": \"Vital Signs\"}]}]\n}"
+							"raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"29463-7\",\n        \"display\": \"Body Weight\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"effectiveDateTime\": \"2026-03-04T10:00:00Z\",\n  \"valueQuantity\": {\n    \"value\": 85,\n    \"unit\": \"kg\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"kg\"\n  },\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/Observation",
 							"host": ["{{baseUrl}}"],
 							"path": ["Observation"]
 						},
-						"description": "Create a new observation. This triggers the goal evaluation engine. The returned ID is saved to the `observationId` collection variable."
+						"description": "Create a new observation. This triggers the goal evaluation engine."
 					},
 					"response": []
 				},
 				{
 					"name": "Create Observation (Goal Achievement Trigger)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test(\"Status is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"pm.test(\"Observation created with ID\", function () {",
-									"    var json = pm.response.json();",
-									"    pm.expect(json.id).to.be.a(\"string\");",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
+				"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -531,7 +399,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"code\": {\"coding\": [{\"system\": \"http://loinc.org\", \"code\": \"29463-7\", \"display\": \"Body Weight\"}]},\n  \"subject\": {\"reference\": \"Patient/{{patientId}}\"},\n  \"effectiveDateTime\": \"2026-03-04T14:00:00Z\",\n  \"valueQuantity\": {\"value\": 79, \"unit\": \"kg\", \"system\": \"http://unitsofmeasure.org\", \"code\": \"kg\"},\n  \"category\": [{\"coding\": [{\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\", \"code\": \"vital-signs\", \"display\": \"Vital Signs\"}]}]\n}"
+							"raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"29463-7\",\n        \"display\": \"Body Weight\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"effectiveDateTime\": \"2026-03-04T14:00:00Z\",\n  \"valueQuantity\": {\n    \"value\": 79,\n    \"unit\": \"kg\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"kg\"\n  },\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/Observation",
@@ -553,9 +421,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/Observation/{{observationId}}",
+							"raw": "{{baseUrl}}/Observation/example-observation-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["Observation", "{{observationId}}"]
+							"path": ["Observation", "example-observation-id"]
 						},
 						"description": "Retrieve a single observation by ID."
 					},
@@ -567,9 +435,9 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/Observation/{{observationId}}",
+							"raw": "{{baseUrl}}/Observation/example-observation-id",
 							"host": ["{{baseUrl}}"],
-							"path": ["Observation", "{{observationId}}"]
+							"path": ["Observation", "example-observation-id"]
 						},
 						"description": "Delete an observation by ID. Returns 204 No Content on success."
 					},
@@ -593,7 +461,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"patientId\": \"{{patientId}}\"}"
+							"raw": "{\n  \"patientId\": \"example-patient-id\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/Goal/$suggest",

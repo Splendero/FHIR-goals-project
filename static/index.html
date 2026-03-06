@@ -33,7 +33,7 @@
   --events-w:320px;
   --header-h:56px;
 }
-html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden;max-width:100vw}
 
 /* ===== HEADER ===== */
 .header{
@@ -50,8 +50,8 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ===== LAYOUT ===== */
-.app-wrapper{display:flex;flex-direction:column;height:100vh;padding-top:var(--header-h)}
-.app{display:flex;flex:1;min-height:0}
+.app-wrapper{display:flex;flex-direction:column;height:100vh;padding-top:var(--header-h);overflow:hidden}
+.app{display:flex;flex:1;min-height:0;overflow:hidden}
 .sidebar{
   width:var(--sidebar-w);min-width:var(--sidebar-w);
   background:var(--surface);border-right:1px solid var(--border);
@@ -303,8 +303,8 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 }
 .terminal-resize-handle:hover,.terminal-resize-handle.active{background:#0066CC}
 .terminal-panel{
-  height:300px;min-height:120px;
-  background:#1a1b26;display:flex;flex-direction:column;flex-shrink:0;
+  height:300px;min-height:120px;width:100%;
+  background:#1a1b26;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
 }
 .terminal-toolbar{
   display:flex;align-items:center;height:36px;min-height:36px;
@@ -333,8 +333,9 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .term-toolbar-btn:hover{background:#292e42;color:#a9b1d6}
 .term-toolbar-btn.active{color:#7aa2f7}
 .terminal-body{flex:1;display:flex;min-height:0;overflow:hidden}
-.terminal-container{flex:1;min-width:0;position:relative}
+.terminal-container{flex:1;min-width:0;max-width:100%;position:relative;overflow:hidden}
 .terminal-container .xterm{height:100%;padding:4px 0 0 4px}
+.terminal-container .xterm-screen{max-width:100%!important}
 
 /* ===== POSTMAN SIDEBAR ===== */
 .postman-sidebar{
@@ -1167,6 +1168,7 @@ function connectTerminalWS() {
 
   termState.term.onData((data) => {
     if (ws.readyState === WebSocket.OPEN) ws.send(data);
+    if (data === '\r' || data === '\n') scheduleTerminalRefresh();
   });
 
   termState.term.onResize(({ cols, rows }) => {
@@ -1187,6 +1189,23 @@ function writeToTerminal(text) {
       for (const ch of text) termState.ws.send(ch);
     }
   }, termState.term ? 100 : 800);
+}
+
+// ─── TERMINAL → DASHBOARD REFRESH ───
+let _termRefreshTimer = null;
+function scheduleTerminalRefresh() {
+  if (_termRefreshTimer) clearTimeout(_termRefreshTimer);
+  _termRefreshTimer = setTimeout(async () => {
+    _termRefreshTimer = null;
+    await loadPatients();
+    if (state.selectedPatient) {
+      const pid = state.selectedPatient.id;
+      await Promise.all([loadGoals(pid), loadObservations(pid), loadCarePlans(pid)]);
+      const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+      if (activeTab === 'goals') renderGoals();
+      else if (activeTab === 'careplans') renderCarePlans();
+    }
+  }, 1500);
 }
 
 // ─── TERMINAL RESIZE HANDLE ───
@@ -1272,36 +1291,40 @@ function sendPostmanRequest(folderIdx, reqIdx) {
   const method = req.method || 'GET';
   let url = req.url?.raw || '';
 
-  url = url.replace(/\{\{baseUrl\}\}/g, window.location.origin);
-  if (state.selectedPatient?.id) {
-    url = url.replace(/\{\{patientId\}\}/g, state.selectedPatient.id);
-  }
+  const patientId = state.selectedPatient?.id;
   const goalId = state.goals?.[0]?.id;
-  if (goalId) url = url.replace(/\{\{goalId\}\}/g, goalId);
   const cpId = state.carePlans?.[0]?.id;
-  if (cpId) url = url.replace(/\{\{carePlanId\}\}/g, cpId);
+  const obsId = state.observations?.[0]?.id;
+
+  function replaceVars(s) {
+    s = s.replace(/\{\{baseUrl\}\}/g, window.location.origin);
+    if (patientId) s = s.replace(/example-patient-id/g, patientId);
+    if (goalId) s = s.replace(/example-goal-id/g, goalId);
+    if (cpId) s = s.replace(/example-careplan-id/g, cpId);
+    if (obsId) s = s.replace(/example-observation-id/g, obsId);
+    return s;
+  }
+
+  url = replaceVars(url);
 
   let curl = `curl -s -X ${method}`;
 
   if (req.header) {
     for (const h of req.header) {
-      curl += ` \\\n  -H '${h.key}: ${h.value}'`;
+      curl += ` -H '${h.key}: ${h.value}'`;
     }
   }
 
   if (req.body?.raw) {
-    let body = req.body.raw;
-    body = body.replace(/\{\{baseUrl\}\}/g, window.location.origin);
-    if (state.selectedPatient?.id) body = body.replace(/\{\{patientId\}\}/g, state.selectedPatient.id);
-    if (goalId) body = body.replace(/\{\{goalId\}\}/g, goalId);
-    if (cpId) body = body.replace(/\{\{carePlanId\}\}/g, cpId);
+    let body = replaceVars(req.body.raw);
+    body = body.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
     const escaped = body.replace(/'/g, "'\\''");
-    curl += ` \\\n  -d '${escaped}'`;
+    curl += ` -d '${escaped}'`;
   }
 
-  curl += ` \\\n  '${url}' | python3 -m json.tool 2>/dev/null || true`;
+  curl += ` '${url}' | python3 -m json.tool 2>/dev/null || true`;
 
-  writeToTerminal(curl + '\n');
+  writeToTerminal(curl);
 }
 
 // ─── INIT ───
