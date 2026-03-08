@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -91,7 +92,7 @@ func main() {
 	r.Get("/metadata", capabilityHandler)
 
 	staticDir := http.Dir("./static")
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(staticDir)))
+	fileServer(r, "/static", staticDir)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./static/index.html")
 	})
@@ -120,6 +121,26 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	srv.Shutdown(ctx)
+}
+
+// fileServer serves static files so nested paths like /static/images/fhir-logo.svg work with Chi.
+func fileServer(r chi.Router, path string, root http.FileSystem) {
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, path+"/", http.StatusMovedPermanently)
+		})
+		path += "/"
+	}
+	path += "*"
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		rctx := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		if pathPrefix != "/" {
+			pathPrefix += "/"
+		}
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
 }
 
 func runMigrations(db *sqlx.DB) {
