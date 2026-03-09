@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE patients (
+CREATE TABLE IF NOT EXISTS patients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     active BOOLEAN NOT NULL DEFAULT true,
     name_family VARCHAR(255),
@@ -13,7 +13,7 @@ CREATE TABLE patients (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE goals (
+CREATE TABLE IF NOT EXISTS goals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     lifecycle_status VARCHAR(50) NOT NULL DEFAULT 'proposed',
     achievement_status VARCHAR(50) NOT NULL DEFAULT 'in-progress',
@@ -34,7 +34,7 @@ CREATE TABLE goals (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE observations (
+CREATE TABLE IF NOT EXISTS observations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     status VARCHAR(50) NOT NULL DEFAULT 'final',
     category_code VARCHAR(100),
@@ -51,9 +51,9 @@ CREATE TABLE observations (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_goals_subject ON goals(subject_id);
-CREATE INDEX idx_goals_status ON goals(lifecycle_status);
-CREATE INDEX idx_goals_category ON goals(category_code);
-CREATE INDEX idx_observations_subject ON observations(subject_id);
-CREATE INDEX idx_observations_code ON observations(code_code);
-CREATE INDEX idx_observations_date ON observations(effective_date);
+CREATE INDEX IF NOT EXISTS idx_goals_subject ON goals(subject_id);
+CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(lifecycle_status);
+CREATE INDEX IF NOT EXISTS idx_goals_category ON goals(category_code);
+CREATE INDEX IF NOT EXISTS idx_observations_subject ON observations(subject_id);
+CREATE INDEX IF NOT EXISTS idx_observations_code ON observations(code_code);
+CREATE INDEX IF NOT EXISTS idx_observations_date ON observations(effective_date);

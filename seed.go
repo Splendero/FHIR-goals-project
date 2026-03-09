@@ -19,20 +19,31 @@ func env(key, fallback string) string {
 }
 
 func main() {
-	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		env("DB_HOST", "localhost"),
-		env("DB_PORT", "5432"),
-		env("DB_USER", "fhir"),
-		env("DB_PASSWORD", "fhir"),
-		env("DB_NAME", "fhir_goals"),
-	)
+	// Prefer DATABASE_URL (Railway, etc.) when set
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		dsn = fmt.Sprintf(
+			"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			env("DB_HOST", "localhost"),
+			env("DB_PORT", "5432"),
+			env("DB_USER", "fhir"),
+			env("DB_PASSWORD", "fhir"),
+			env("DB_NAME", "fhir_goals"),
+		)
+	}
 
 	db, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}
 	defer db.Close()
+
+	// Idempotent: skip if already seeded (safe for Railway redeploys)
+	var count int
+	if err := db.Get(&count, "SELECT COUNT(*) FROM patients"); err == nil && count > 0 {
+		fmt.Println("Already seeded, skipping")
+		return
+	}
 
 	now := time.Now()
 	ago := func(days int) time.Time { return now.AddDate(0, 0, -days) }

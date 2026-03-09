@@ -5,11 +5,13 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /fhir-goals-engine ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -o /seed seed.go
 
 FROM alpine:3.19
-RUN apk --no-cache add ca-certificates curl bash python3
+RUN apk --no-cache add ca-certificates curl bash python3 postgresql-client
 WORKDIR /app
 COPY --from=builder /fhir-goals-engine .
+COPY --from=builder /seed .
 COPY static/ ./static/
 COPY migrations/ ./migrations/
 COPY postman/ ./postman/
