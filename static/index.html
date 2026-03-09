@@ -97,6 +97,14 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
 .main-header h1{font-size:22px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
 .main-header h1 .patient-gender{font-size:18px}
+.patient-id{
+  font-size:14px;font-weight:500;color:var(--text-muted);
+  font-family:'SF Mono',Monaco,Consolas,monospace;
+  cursor:pointer;padding:2px 8px;margin-left:4px;
+  border-radius:var(--radius);background:var(--bg);
+  transition:background .15s,color .15s;
+}
+.patient-id:hover{background:var(--primary-light);color:var(--primary)}
 .tab-bar{display:flex;gap:4px;background:var(--bg);border-radius:var(--radius);padding:3px;margin-bottom:20px}
 .tab-btn{
   padding:8px 20px;border:none;background:transparent;border-radius:6px;
@@ -629,7 +637,7 @@ async function selectPatient(id) {
   document.getElementById('noSelection').style.display = 'none';
   document.getElementById('patientView').style.display = '';
   const gIcon = icons[p.gender] || '';
-  document.getElementById('patientName').innerHTML = `${esc(patientName(p))} <span class="patient-gender">${gIcon}</span>`;
+  document.getElementById('patientName').innerHTML = `${esc(patientName(p))} <span class="patient-gender">${gIcon}</span> <span class="patient-id" data-id="${esc(p.id)}" onclick="copyPatientId(this)" title="Click to copy ID">${esc(p.id)}</span>`;
   connectWebSocket(id);
   await Promise.all([loadGoals(id), loadObservations(id)]);
 }
@@ -841,6 +849,15 @@ function formatDate(d) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const m = parseInt(parts[1], 10);
   return `${months[m - 1] || parts[1]} ${parseInt(parts[2], 10)}, ${parts[0]}`;
+}
+
+function copyPatientId(el) {
+  const id = el.getAttribute('data-id');
+  navigator.clipboard.writeText(id).then(() => {
+    showToast('Patient ID copied to clipboard', 'success');
+  }).catch(() => {
+    showToast('Failed to copy', 'error');
+  });
 }
 
 function showToast(msg, type = 'info') {
