@@ -3,4 +3,4 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-preDeployCommand = "/bin/sh -c \"psql $DATABASE_URL -f migrations/001_create_tables.up.sql && ./seed\""
+preDeployCommand = "/bin/sh -c "psql $DATABASE_URL -f migrations/001_create_tables.up.sql && ./seed && ./fhir-goals-engine""
