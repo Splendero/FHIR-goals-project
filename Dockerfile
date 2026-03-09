@@ -16,4 +16,4 @@ COPY static/ ./static/
 COPY migrations/ ./migrations/
 COPY postman/ ./postman/
 EXPOSE 8080
-CMD ["./fhir-goals-engine"]
+CMD ["/bin/sh", "-c", "psql \"$DATABASE_URL\" -f migrations/001_create_tables.up.sql && ./seed && ./fhir-goals-engine"]
