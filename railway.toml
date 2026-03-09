@@ -3,4 +3,5 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-preDeployCommand = "/bin/sh -c "psql $DATABASE_URL -f migrations/001_create_tables.up.sql && ./seed && ./fhir-goals-engine""
+# Pre-deploy disabled - using Custom Start Command in Railway dashboard instead
+# preDeployCommand = "/bin/sh -c \"psql $DATABASE_URL -f migrations/001_create_tables.up.sql && ./seed\""

@@ -3,6 +3,7 @@ package patient
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -80,6 +81,8 @@ func (h *Handler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	patients, err := h.svc.Search(r.Context(), params)
 	if err != nil {
+		// Log actual error for debugging (e.g. DB timeout, connection refused)
+		log.Printf("Patient search failed: %v", err)
 		writeError(w, http.StatusInternalServerError, "exception", "Search failed")
 		return
 	}

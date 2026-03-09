@@ -1,0 +1,365 @@
+{
+	"info": {
+		"_postman_id": "fhir-goal-tracker-collection",
+		"name": "FHIR Goal Tracker",
+		"description": "Postman collection for the FHIR R4 Health Goal Tracker API. Covers Patient, Goal, and Observation CRUD operations.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Patients",
+			"item": [
+				{
+					"name": "Search All Patients",
+				"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Patient",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient"]
+						},
+						"description": "Search all patients."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Patient",
+				"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Patient\",\n  \"active\": true,\n  \"name\": [\n    {\n      \"family\": \"Smith\",\n      \"given\": [\"John\"]\n    }\n  ],\n  \"gender\": \"male\",\n  \"birthDate\": \"1990-01-15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Patient",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient"]
+						},
+						"description": "Create a new patient."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Patient/example-patient-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient", "example-patient-id"]
+						},
+						"description": "Retrieve a single patient by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Patient",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Patient\",\n  \"active\": true,\n  \"name\": [\n    {\n      \"family\": \"Smith\",\n      \"given\": [\"John\"]\n    }\n  ],\n  \"gender\": \"female\",\n  \"birthDate\": \"1990-01-15\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Patient/example-patient-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient", "example-patient-id"]
+						},
+						"description": "Update an existing patient. This example changes gender from male to female."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Patient",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Patient/example-patient-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Patient", "example-patient-id"]
+						},
+						"description": "Delete a patient by ID. Returns 204 No Content on success."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for FHIR Patient resources."
+		},
+		{
+			"name": "2. Goals",
+			"item": [
+				{
+					"name": "Search Goals for Patient",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Goal?patient=example-patient-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal"],
+							"query": [
+								{
+									"key": "patient",
+									"value": "example-patient-id"
+								}
+							]
+						},
+						"description": "Search all goals linked to a patient."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Goal",
+				"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Goal\",\n  \"lifecycleStatus\": \"active\",\n  \"description\": {\n    \"text\": \"Reduce body weight to 80kg\"\n  },\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/goal-category\",\n          \"code\": \"dietary\",\n          \"display\": \"Dietary\"\n        }\n      ]\n    }\n  ],\n  \"target\": [\n    {\n      \"measure\": {\n        \"coding\": [\n          {\n            \"system\": \"http://loinc.org\",\n            \"code\": \"29463-7\",\n            \"display\": \"Body Weight\"\n          }\n        ]\n      },\n      \"detailQuantity\": {\n        \"value\": 80,\n        \"unit\": \"kg\",\n        \"system\": \"http://unitsofmeasure.org\"\n      },\n      \"dueDate\": \"2026-06-01\"\n    }\n  ],\n  \"startDate\": \"2026-03-04\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Goal",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal"]
+						},
+						"description": "Create a new health goal for the patient."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Goal by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Goal/example-goal-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal", "example-goal-id"]
+						},
+						"description": "Retrieve a single goal by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Goal",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Goal\",\n  \"lifecycleStatus\": \"on-hold\",\n  \"description\": {\n    \"text\": \"Reduce body weight to 80kg\"\n  },\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/goal-category\",\n          \"code\": \"dietary\",\n          \"display\": \"Dietary\"\n        }\n      ]\n    }\n  ],\n  \"target\": [\n    {\n      \"measure\": {\n        \"coding\": [\n          {\n            \"system\": \"http://loinc.org\",\n            \"code\": \"29463-7\",\n            \"display\": \"Body Weight\"\n          }\n        ]\n      },\n      \"detailQuantity\": {\n        \"value\": 80,\n        \"unit\": \"kg\",\n        \"system\": \"http://unitsofmeasure.org\"\n      },\n      \"dueDate\": \"2026-06-01\"\n    }\n  ],\n  \"startDate\": \"2026-03-04\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Goal/example-goal-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal", "example-goal-id"]
+						},
+						"description": "Update an existing goal. This example changes lifecycleStatus from active to on-hold."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Goal",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Goal/example-goal-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Goal", "example-goal-id"]
+						},
+						"description": "Delete a goal by ID. Returns 204 No Content on success."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for FHIR Goal resources."
+		},
+		{
+			"name": "3. Observations",
+			"item": [
+				{
+					"name": "Search Observations for Patient",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Observation?patient=example-patient-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation"],
+							"query": [
+								{
+									"key": "patient",
+									"value": "example-patient-id"
+								}
+							]
+						},
+						"description": "Search all observations linked to a patient."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Observation",
+				"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"29463-7\",\n        \"display\": \"Body Weight\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"effectiveDateTime\": \"2026-03-04T10:00:00Z\",\n  \"valueQuantity\": {\n    \"value\": 85,\n    \"unit\": \"kg\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"kg\"\n  },\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Observation",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation"]
+						},
+						"description": "Create a new observation. This triggers the goal evaluation engine."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Observation (Goal Achievement Trigger)",
+				"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"29463-7\",\n        \"display\": \"Body Weight\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/example-patient-id\"\n  },\n  \"effectiveDateTime\": \"2026-03-04T14:00:00Z\",\n  \"valueQuantity\": {\n    \"value\": 79,\n    \"unit\": \"kg\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"kg\"\n  },\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/Observation",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation"]
+						},
+						"description": "This observation's weight (79kg) is below the goal target (80kg), which should trigger automatic goal achievement. After running this request, check the goal's lifecycleStatus — it should be updated to 'achieved'."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Observation by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/Observation/example-observation-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation", "example-observation-id"]
+						},
+						"description": "Retrieve a single observation by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Observation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/Observation/example-observation-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["Observation", "example-observation-id"]
+						},
+						"description": "Delete an observation by ID. Returns 204 No Content on success."
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for FHIR Observation resources. Creating observations triggers the goal evaluation engine, which can automatically mark goals as achieved."
+		},
+		{
+			"name": "4. Server Info",
+			"item": [
+				{
+					"name": "FHIR CapabilityStatement",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/fhir+json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/metadata",
+							"host": ["{{baseUrl}}"],
+							"path": ["metadata"]
+						},
+						"description": "Returns the FHIR CapabilityStatement describing the server's supported resources, interactions, and operations."
+					},
+					"response": []
+				}
+			],
+			"description": "Server metadata and conformance information."
+		}
+	]
+}
